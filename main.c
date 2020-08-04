@@ -25,7 +25,7 @@ typedef struct __tag_fs_rect
 }FS_Rect;
 
 
-void main()
+void submain()
 {
 	
 	uint8_t * src_data[3];
@@ -85,4 +85,8 @@ void main()
 	return 0;
 }
 
+void main(){
+	int j = 0;
+	for (; j<10000;j++)submain();
+}
 
