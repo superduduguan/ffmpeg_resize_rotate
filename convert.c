@@ -150,7 +150,7 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 		int YUV_size = DST_H * DST_W * 3 / 2;
 
 
-		if(c->rotate == 0)
+		if(c->rotate == 0)//0
 		{
 			for(BBQ = 0; BBQ < DST_W; BBQ++)
 			{
@@ -173,11 +173,39 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 			switch (c->degree)
 			{
 			case 1://90
+			
+				for(BBQ = 0; BBQ < DST_W; BBQ++)
+					{
+						//printf("o\n");
+						dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
+						*(final + (BBQ + 1) * DST_H - 1 - PPQ) = (float)(dst1 + x)* y;
+						//printf("%d\n", (BBQ + 1) * DST_H - 1 - PPQ);
 
+						
+						if(~PPQ & 0x0001)
+						{
+							
+							dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
+							if(~BBQ & 0x0001)//U
+							{	//printf("%d\n", Y_size);
+								//printf("%d\n", Y_size + (BBQ + 1) * DST_H - 2- PPQ);
+								//printf("%d, %d, %d\n", PPQ, BBQ,(BBQ + 1) * DST_H - 2- PPQ);
+								//printf("%d\n",DST_H);
+								printf("PPQ:%d, BBQ:%d, old: %d, new:%d\n", PPQ, BBQ, BBQ + PPQ * DST_W / 2 + DST_H * DST_W, Y_size + (BBQ/2 + 1) * DST_H - 2- PPQ);
+								*(final + Y_size + (BBQ/2 + 1) * DST_H - 2- PPQ)  = (float)(dst2 + x)* y;
+							}
+							if(BBQ & 0x0001)//V
+							{
+								//printf("q\n");
+								printf("PPQ:%d, BBQ:%d, old: %d, new:%d\n", PPQ, BBQ, BBQ + PPQ * DST_W / 2 + DST_H * DST_W, Y_size + (BBQ/2 + 1) * DST_H - 1- PPQ);
+								*(final + Y_size + (BBQ/2 + 1) * DST_H - 1- PPQ)  = (float)(dst2 + x)* y;
+							}
+						}
+					}
 				break;
 			
 
-			case 2://180
+			case 2://180 ok
 				{
 
 					for(BBQ = 0; BBQ < DST_W; BBQ++)
@@ -189,11 +217,11 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 						if(~PPQ & 0x0001)
 						{
 							dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
-							if(~BBQ & 0x0001)
+							if(~BBQ & 0x0001)//u
 							{
 								*(final + YUV_size - 2 - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
 							}
-							if(BBQ & 0x0001)
+							if(BBQ & 0x0001)//v
 							{
 								*(final + YUV_size  - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
 							}
