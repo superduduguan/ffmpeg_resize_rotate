@@ -146,7 +146,8 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 
 		float * final = desc->dst->plane[0].line[0];
 		//printf("address for final is %x\n", final);
-
+		int Y_size = DST_H * DST_W;
+		int YUV_size = DST_H * DST_W * 3 / 2;
 
 
 		if(c->rotate == 0)
@@ -164,22 +165,46 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 				}
 			}
 		}
-		else
+
+		//printf("%d,  %d\n", c->rotate, c->degree);
+
+		if(c->rotate == 1)
 		{
 			switch (c->degree)
 			{
 			case 1://90
-				
+
 				break;
 			
 
 			case 2://180
-				
-				break;
+				{
 
+					for(BBQ = 0; BBQ < DST_W; BBQ++)
+					{
+						dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
+						*(final + Y_size - 1 - BBQ - PPQ * DST_W) = (float)(dst1 + x)* y;
+
+						//if(PPQ % 2 == 0)
+						if(~PPQ & 0x0001)
+						{
+							dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
+							if(~BBQ & 0x0001)
+							{
+								*(final + YUV_size - 2 - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
+							}
+							if(BBQ & 0x0001)
+							{
+								*(final + YUV_size  - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
+							}
+						}
+					}
+					break;
+				}
 			case 3://270
 				
 				break;
+				
 
 			}
 		}

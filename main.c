@@ -61,14 +61,15 @@ int submain()
 	dst_data1[0] = (float *)malloc(DST_W * DST_H * sizeof(float)* 3 / 2 *3);
 	dst_data1[2] = dst_data1[1] = dst_data1[0] + DST_W * DST_H;
 	
-	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0, 1);
-	
+	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 1, 2);
+	printf("%f\n", dst_data1[0][DST_H*DST_W - 1]);
 	printf("%f\n", dst_data1[0][0]);
-	printf("%f\n", dst_data1[0][1]);
-	printf("%f\n", dst_data1[0][2]);
-	printf("%f\n", dst_data1[0][300]);
-	printf("%f\n", dst_data1[0][20000]);
-	printf("%f\n", dst_data1[0][60000]);
+	// printf("%f\n", dst_data1[0][1]);
+	// printf("%f\n", dst_data1[0][2]);
+	// printf("%f\n", dst_data1[0][300]);
+	
+	// printf("%f\n", dst_data1[0][60000]);
+	printf("%f\n", dst_data1[0][DST_H*DST_W]);
 	printf("%f\n", dst_data1[0][DST_H*DST_W*3/2-1]);
 
 	
@@ -78,13 +79,20 @@ int submain()
 	dst_data2[0] = (uint8_t *)malloc(DST_W * DST_H * sizeof(uint8_t)* 3 / 2);
 	dst_data2[2] = dst_data2[1] = dst_data2[0] + DST_W * DST_H;
 	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 0, 1);
+
+
 	printf("%hu\n", dst_data2[0][0]);
-	printf("%hu\n", dst_data2[0][DST_H*DST_W*3/2-1]);
+	printf("%hu\n", dst_data2[0][DST_H*DST_W - 1]);
+	printf("%hu\n", dst_data2[0][DST_H*DST_W*3/2 - 2]);
+	printf("%hu\n", dst_data2[0][DST_H*DST_W + 1]);
+
+
+
 
 
 	int check = 0;
 	int QW = 0;
-	for(;check<DST_H*DST_W*1.5-1;check++)
+	for(;check<DST_H*DST_W*3/2-1;check++)
 	{	
 		float a = dst_data1[0][check];
 		uint8_t b = dst_data2[0][check];
@@ -94,16 +102,12 @@ int submain()
 	printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
 
 
-	printf("finish\n");
 	fs_freeScaleHandle(handle1);
-	
 	fs_freeScaleHandle(handle2);
-	printf("finish\n");
 	free(dst_data1[0]);
 	free(src_data[0]);
 	free(dst_data[0]);
 	free(dst_data2[0]);
-
 	free(handle1);
 	free(handle2);
 	printf("finish\n");
