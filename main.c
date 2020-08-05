@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #define SRC_W	1920
 #define SRC_H	1080
@@ -25,7 +26,7 @@ typedef struct __tag_fs_rect
 }FS_Rect;
 
 
-void submain()
+void main()
 {
 	
 	uint8_t * src_data[3];
@@ -53,13 +54,32 @@ void submain()
 	float * dst_data1[3];
 	dst_data1[0] = (float *)malloc(DST_W * DST_H * sizeof(float)* 1.5);
 	dst_data1[2] = dst_data1[1] = dst_data1[0] + DST_W * DST_H;
+
+
+	clock_t start,finish; //定义开始，结束变量
+	start = clock();//初始化
+
+	int P = 0;
+	for(; P<10000;P++)
 	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0, 0);
+	finish = clock();//初始化结束时间
+double duration = (double)(finish - start) / CLOCKS_PER_SEC;//转换浮点型
+printf( "%lf seconds\n", duration );
+
 	printf("%f\n", dst_data1[0][86399]);
 
 	uint8_t * dst_data2[3];
 	dst_data2[0] = (uint8_t *)malloc(DST_W * DST_H * sizeof(uint8_t)* 1.5);
 	dst_data2[2] = dst_data2[1] = dst_data2[0] + DST_W * DST_H;
+
+	start = clock();//初始化
+
+	P = 0;
+	for(; P<10000;P++)
 	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 0, 0);
+	finish = clock();//初始化结束时间
+duration = (double)(finish - start) / CLOCKS_PER_SEC;//转换浮点型
+printf( "%lf seconds\n", duration );
 	printf("%hu\n", dst_data2[0][86399]);
 
  	
@@ -85,8 +105,4 @@ void submain()
 	return 0;
 }
 
-void main(){
-	int j = 0;
-	for (; j<10000;j++)submain();
-}
 
