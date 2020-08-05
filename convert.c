@@ -147,23 +147,47 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 		float * final = desc->dst->plane[0].line[0];
 		//printf("address for final is %x\n", final);
 
-		for(BBQ = 0; BBQ < DST_W; BBQ++)
-		{
-			dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//Y
-			*(final + BBQ + PPQ * DST_W) = (float)(dst1 + x)* y;
 
-			//if(PPQ % 2 == 0)
-			if(~PPQ & 0x0001)
+
+		if(c->rotate == 0)
+		{
+			for(BBQ = 0; BBQ < DST_W; BBQ++)
 			{
-				dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);
-				*(final + BBQ + PPQ * DST_W / 2 + DST_H * DST_W)  = (float)(dst2 + x)* y;
+				dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//Y
+				*(final + BBQ + PPQ * DST_W) = (float)(dst1 + x)* y;
+
+				//if(PPQ % 2 == 0)
+				if(~PPQ & 0x0001)
+				{
+					dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);
+					*(final + BBQ + PPQ * DST_W / 2 + DST_H * DST_W)  = (float)(dst2 + x)* y;
+				}
 			}
 		}
+		else
+		{
+			switch (c->degree)
+			{
+			case 1://90
+				
+				break;
+			
 
-		PPQ ++;
-		// if(BBQ == DST_W && PPQ == DST_H)printf("address for desc->dst->plane[0].line[0] is %x", desc->dst->plane[0].line[0]);
-		// if(BBQ == DST_W && PPQ == DST_H)printf("\ns---%hu---s\n", *(desc->dst->plane[0].line[0]+DST_W-1 + (DST_H-1) * DST_W));
-		// if(BBQ == DST_W && PPQ == DST_H)printf("\ns---%f---s\n", (dst1 + x)* y);
+			case 2://180
+				
+				break;
+
+			case 3://270
+				
+				break;
+
+			}
+		}
+		
+
+		
+
+
 		return sliceH;
 	
 

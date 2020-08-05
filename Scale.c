@@ -351,11 +351,19 @@ fail: // FIXME replace things by appropriate error codes
 
 int scale(fs_scale_handle *c, const uint8_t *const srcSlice[],
 	const int srcStride[], int srcSliceY, int srcSliceH,
-	void *const dst[], const int dstStride[], float mean_data, float std_data)
+	void *const dst[], const int dstStride[], int rotate, int degree)
 	{
+		if((rotate == 0 || rotate == 1) && (degree == 1 || degree == 2 || degree == 3))
+		{ 
+			if(c->form == 0)my_sws_scale(c, srcSlice, srcStride, 0, srcSliceH, (float*)dst, dstStride, rotate, degree);//tofloat
+			if(c->form == 1)my_sws_scaletoint(c, srcSlice, srcStride, 0, srcSliceH, (uint8_t*)dst, dstStride, rotate, degree);//toint
+		}
+		else
+		{
+			printf("input valid!\n");
+			return -1;
+		}
 
-		if(c->form == 0)my_sws_scale(c, srcSlice, srcStride, 0, srcSliceH, (float*)dst, dstStride, 0, 0);//tofloat
-		if(c->form == 1)my_sws_scaletoint(c, srcSlice, srcStride, 0, srcSliceH, (uint8_t*)dst, dstStride, 0, 0);//toint
 	}
 
 
@@ -849,7 +857,7 @@ static int swscaletoint(fs_scale_handle *c, const uint8_t *src[], int srcStride[
 
 
 
-int  my_sws_scale(fs_scale_handle *c, const uint8_t * const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, float *const dst[], const int dstStride[], float mean_data, float std_data)
+int  my_sws_scale(fs_scale_handle *c, const uint8_t * const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, float *const dst[], const int dstStride[], int rotate, int degree)
 {
 	int i, ret = 0;
 	const uint8_t *src2[4];
@@ -885,6 +893,8 @@ int  my_sws_scale(fs_scale_handle *c, const uint8_t * const srcSlice[], const in
 
 
 	c->sliceDir = 1;
+	c->rotate = rotate;
+	c->degree = degree;
 
 	src2[3] = src2[2] = NULL;
 	dst2[3] = dst2[2] = NULL;
@@ -896,7 +906,7 @@ int  my_sws_scale(fs_scale_handle *c, const uint8_t * const srcSlice[], const in
 }
 
 
-int  my_sws_scaletoint(fs_scale_handle *c, const uint8_t * const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t *const dst[], const int dstStride[], float mean_data, float std_data)
+int  my_sws_scaletoint(fs_scale_handle *c, const uint8_t * const srcSlice[], const int srcStride[], int srcSliceY, int srcSliceH, uint8_t *const dst[], const int dstStride[], int rotate, int degree)
 {
 	
 	int i, ret = 0;
@@ -933,6 +943,8 @@ int  my_sws_scaletoint(fs_scale_handle *c, const uint8_t * const srcSlice[], con
 
 
 	c->sliceDir = 1;
+	c->rotate = rotate;
+	c->degree = degree;
 
 	src2[3] = src2[2] = NULL;
 	dst2[3] = dst2[2] = NULL;
