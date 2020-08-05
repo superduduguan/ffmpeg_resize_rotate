@@ -450,7 +450,7 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 		for (j = 0; j < filterSize; j++) {
 			sum += filter[i * filterSize + j];
 		}
-		sum = (sum + one *0.5) / one;
+		sum = (sum + one / 2) / one;
 		if (!sum) {
 
 			sum = 1;

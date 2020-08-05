@@ -221,9 +221,60 @@ int init_slice_from_dst(SwsSlice * s, float *src[4], int stride[4], int srcW, in
 		}
 		
 	}
-
+	printf("address for s->plane[0].line[0] is %x\n", s->plane[0].line[0]);
+	//free(src);
 	return 0;
 }
+
+
+// int init_slice_from_dst(SwsSlice * s, float *src[4], int stride[4], int srcW, int lumY, int lumH, int chrY, int chrH, int relative)
+// {
+// 	int i = 0;
+
+// 	const int start[4] = { lumY,
+// 		chrY,
+// 		chrY,
+// 		lumY };
+
+// 	const int end[4] = { lumY + lumH,
+// 		chrY + chrH,
+// 		chrY + chrH,
+// 		lumY + lumH };
+
+// 	float *const src_[4] = { src[0] + (relative ? 0 : start[0]) * stride[0],
+// 		src[1] + (relative ? 0 : start[1]) * stride[1],
+// 		src[2] + (relative ? 0 : start[2]) * stride[2],
+// 		src[3] + (relative ? 0 : start[3]) * stride[3] };
+
+// 	s->width = srcW;
+
+// 	for (i = 0; i < 4; ++i)
+// 	{
+// 		int j;
+// 		int first = s->plane[i].sliceY;
+// 		int n = s->plane[i].available_lines;
+// 		int lines = end[i] - start[i];
+// 		int tot_lines = end[i] - first;
+
+// 		if (start[i] >= first && n >= tot_lines)
+// 		{
+// 			s->plane[i].sliceH = FFMAX(tot_lines, s->plane[i].sliceH);
+// 			for (j = 0; j < lines; j += 1)
+// 				s->plane[i].line[start[i] - first + j] = src_[i] + j * stride[i];
+// 		}
+// 		else
+// 		{
+// 			s->plane[i].sliceY = start[i];
+// 			lines = lines > n ? n : lines;
+// 			s->plane[i].sliceH = lines;
+// 			for (j = 0; j < lines; j += 1)
+// 				s->plane[i].line[j] = src_[i] + j * stride[i];//dst[i]存着slice第i平面的起始地址；dst[i]+ j * stride[i]存着slice的第i平面第j行的起始地址（输出只需要dst[0]就行了）
+// 		}
+
+// 	}
+// 	//free(src);
+// 	return 0;
+// }
 
 int rotate_slice(SwsSlice *s, int lum, int chr)
 {

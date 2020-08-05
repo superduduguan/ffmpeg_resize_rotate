@@ -8,6 +8,8 @@ int helper = 0;
 
 
 
+
+
 typedef struct ColorContext
 {
 	uint32_t *pal;
@@ -134,12 +136,16 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 		desc->dst->plane[2].sliceY = sliceY;
 		desc->dst->plane[2].sliceH = sliceH;
 
-		unsigned int BBQ;
+		int BBQ;
 		
 		uint8_t dst1;
 		uint8_t dst2;
 		
+		//printf("----desc->dst->plane[0].line[0]: %x\n", desc->dst->plane[0].line[0]);
+		//printf("----desc->dst->plane[0]: %x\n", desc->dst->plane[0]);
+
 		float * final = desc->dst->plane[0].line[0];
+		//printf("address for final is %x\n", final);
 
 		for(BBQ = 0; BBQ < DST_W; BBQ++)
 		{
@@ -147,12 +153,16 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 			*(final + BBQ + PPQ * DST_W) = (float)(dst1 + x)* y;
 
 			if(~PPQ & 0x0001)
-			{	
-				 dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);
-				 *(final + BBQ + (int)(PPQ * DST_W * 0.5) + DST_H * DST_W)  = (float)(dst2 + x)* y;
+			{
+				dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);
+				*(final + BBQ + PPQ * DST_W / 2 + DST_H * DST_W)  = (float)(dst2 + x)* y;
 			}
 		}
 
+		PPQ ++;
+		// if(BBQ == DST_W && PPQ == DST_H)printf("address for desc->dst->plane[0].line[0] is %x", desc->dst->plane[0].line[0]);
+		// if(BBQ == DST_W && PPQ == DST_H)printf("\ns---%hu---s\n", *(desc->dst->plane[0].line[0]+DST_W-1 + (DST_H-1) * DST_W));
+		// if(BBQ == DST_W && PPQ == DST_H)printf("\ns---%f---s\n", (dst1 + x)* y);
 		return sliceH;
 	
 
