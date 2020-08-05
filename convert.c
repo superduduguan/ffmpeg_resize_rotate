@@ -152,6 +152,7 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 			dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//Y
 			*(final + BBQ + PPQ * DST_W) = (float)(dst1 + x)* y;
 
+			//if(PPQ % 2 == 0)
 			if(~PPQ & 0x0001)
 			{
 				dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);
