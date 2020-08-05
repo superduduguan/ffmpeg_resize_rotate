@@ -61,7 +61,8 @@ int submain()
 	dst_data1[0] = (float *)malloc(DST_W * DST_H * sizeof(float)* 3 / 2);
 	dst_data1[2] = dst_data1[1] = dst_data1[0] + DST_W * DST_H;
 	
-	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 1, 1);
+	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 1, 3);
+	printf("%f\n", dst_data1[0][0]);
 	printf("%f\n", dst_data1[0][57778]);
 	printf("%f\n", dst_data1[0][57779]);
 	printf("%f\n", dst_data1[0][86398]);
@@ -85,10 +86,10 @@ int submain()
 
 
 	//printf("%hu\n", dst_data2[0][319]);
-	printf("%hu\n", dst_data2[0][57600]);
-	printf("%hu\n", dst_data2[0][57601]);
-	printf("%hu\n", dst_data2[0][57918]);
-	printf("%hu\n", dst_data2[0][57919]);
+	printf("%hu\n", dst_data2[0][86398]);
+	printf("%hu\n", dst_data2[0][86399]);
+	printf("%hu\n", dst_data2[0][86080]);
+	printf("%hu\n", dst_data2[0][86081]);
 	// printf("%hu\n", dst_data2[0][DST_H*DST_W - 1]);
 	// printf("%hu\n", dst_data2[0][DST_H*DST_W*3/2 - 2]);
 	// printf("%hu\n", dst_data2[0][DST_H*DST_W + 1]);
