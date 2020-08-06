@@ -427,6 +427,7 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 	int32_t *vChrFilterPos = c->vChrFilterPos;
 
 	const int vLumFilterSize = c->vLumFilterSize;
+	//printf("vLumFilterSize = %d", vLumFilterSize);
 	const int vChrFilterSize = c->vChrFilterSize;
 
 

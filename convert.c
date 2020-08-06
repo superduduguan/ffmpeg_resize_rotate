@@ -241,19 +241,17 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 							dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
 							if(~BBQ & 0x0001)//u
 							{
-								printf("PPQ:%d, BBQ:%d, old: %d, new:%d\n", PPQ, BBQ, BBQ + PPQ * DST_W / 2 + DST_H * DST_W, Y_size + (DST_W - BBQ/2 - 1) * DST_H + PPQ);
+								//printf("PPQ:%d, BBQ:%d, old: %d, new:%d\n", PPQ, BBQ, BBQ + PPQ * DST_W / 2 + DST_H * DST_W, Y_size + (DST_W - BBQ/2 - 1) * DST_H + PPQ);
 								*(final + Y_size + (DST_W / 2 - BBQ/2 - 1) * DST_H + PPQ)  = (float)(dst2 + x)* y;
 							}
 							if(BBQ & 0x0001)//v
 							{
-								printf("PPQ:%d, BBQ:%d, old: %d, new:%d\n", PPQ, BBQ, BBQ + PPQ * DST_W / 2 + DST_H * DST_W, Y_size + (BBQ/2 + 1) * DST_H + 1 + PPQ);
+								//printf("PPQ:%d, BBQ:%d, old: %d, new:%d\n", PPQ, BBQ, BBQ + PPQ * DST_W / 2 + DST_H * DST_W, Y_size + (BBQ/2 + 1) * DST_H + 1 + PPQ);
 								*(final + Y_size + (DST_W / 2 - BBQ/2 - 1) * DST_H + PPQ + 1)  = (float)(dst2 + x)* y;
 							}
 						}
 					}
 				break;
-				
-
 			}
 		}
 		

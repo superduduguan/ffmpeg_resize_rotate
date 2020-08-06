@@ -22,25 +22,27 @@ static int lum_planar_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, int 
 	uint8_t **src = desc->src->plane[0].line + sp;
 	uint8_t **dst = desc->dst->plane[0].line + dp;
 	uint16_t *filter = inst->filter[0] + sliceY * inst->filter_size;
-
+	
 
 	if (inst->filter_size == 1)
 		((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8, 0);
 	else
 		((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
 
-	if (desc->alpha) {
-		int sp = first - desc->src->plane[3].sliceY;
-		int dp = sliceY - desc->dst->plane[3].sliceY;
-		uint8_t **src = desc->src->plane[3].line + sp;
-		uint8_t **dst = desc->dst->plane[3].line + dp;
-		uint16_t *filter = inst->filter[1] + sliceY * inst->filter_size;
+		
 
-		if (inst->filter_size == 1)
-			((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8/*{64...}*/, 0);
-		else
-			((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
-	}
+	// if (desc->alpha) {
+	// 	int sp = first - desc->src->plane[3].sliceY;
+	// 	int dp = sliceY - desc->dst->plane[3].sliceY;
+	// 	uint8_t **src = desc->src->plane[3].line + sp;
+	// 	uint8_t **dst = desc->dst->plane[3].line + dp;
+	// 	uint16_t *filter = inst->filter[1] + sliceY * inst->filter_size;
+
+	// 	if (inst->filter_size == 1)
+	// 		((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8/*{64...}*/, 0);
+	// 	else
+	// 		((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
+	// }
 
 	
 		 //uint8_t dst1 = *(*(desc->src->plane[0].line + 8) + 174);
@@ -56,32 +58,105 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 {
 	VScalerContext *inst = (VScalerContext *)desc->instance;
 	int dstW = desc->dst->width;
+	int dstH = desc->dstH;
+	//printf("%d\n", dstH);
 
 	int first = FFMAX(1 - inst->filter_size, inst->filter_pos[sliceY]);
 	int sp = first - desc->src->plane[0].sliceY;
 	int dp = sliceY - desc->dst->plane[0].sliceY;
 	uint8_t **src = desc->src->plane[0].line + sp;
-	uint8_t **dst = desc->dst->plane[0].line + dp;
+	
 	uint16_t *filter = inst->filter[0] + sliceY * inst->filter_size;
+	uint16_t **sr = (const int16_t**)src;
+	//printf("address for new_dst : %x\n", desc->dst->plane[0].line[0]);
+	
 
+	if(c->rotate == 0)//0
+	{
+		uint8_t **dst = desc->dst->plane[0].line + dp;
+		int i;
+		for (i = 0; i<dstW; i++) 
+		{
+			int val = 0;
+			int j;
+			
+			for (j = 0; j<inst->filter_size; j++)
+				val += sr[j][i] * (int16_t)filter[j];
 
-	if (inst->filter_size == 1)
-		((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8, 0);
-	else
-		((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
-
-	if (desc->alpha) {
-		int sp = first - desc->src->plane[3].sliceY;
-		int dp = sliceY - desc->dst->plane[3].sliceY;
-		uint8_t **src = desc->src->plane[3].line + sp;
-		uint8_t **dst = desc->dst->plane[3].line + dp;
-		uint16_t *filter = inst->filter[1] + sliceY * inst->filter_size;
-
-		if (inst->filter_size == 1)
-			((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8/*{64...}*/, 0);
-		else
-			((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
+			dst[0][i] = av_clip_uint8_c(val >> 19);
+		}
 	}
+
+	if(c->rotate == 1)//90
+	{
+		uint8_t *final = desc->dst->plane[0].line[0];
+		switch (c->degree)
+		{
+			case 1:
+			{
+				
+				int i;
+				
+				for (i = 0; i<dstW; i++) 
+				{	//printf("123!\n");
+					
+					int val = 0;
+					int j;
+					
+					for (j = 0; j<inst->filter_size; j++)
+						val += sr[j][i] * (int16_t)filter[j];
+						
+					
+					*(final + (i + 1) * dstH - 1 - dp) = av_clip_uint8_c(val >> 19);
+				}
+				break;
+			}
+
+			case 2:
+			{
+				int Y_size = dstH * dstW;
+				int i;
+				
+				for (i = 0; i<dstW; i++) 
+				{	//printf("123!\n");
+					
+					int val = 0;
+					int j;
+					
+					for (j = 0; j<inst->filter_size; j++)
+						val += sr[j][i] * (int16_t)filter[j];
+						
+					
+					*(final + Y_size - 1 - i - dp * dstW) = av_clip_uint8_c(val >> 19);
+				}
+				break;
+			}	
+					
+			case 3:
+			{
+				int i;
+				
+				for (i = 0; i<dstW; i++) 
+				{	//printf("123!\n");
+					
+					int val = 0;
+					int j;
+					
+					for (j = 0; j<inst->filter_size; j++)
+						val += sr[j][i] * (int16_t)filter[j];
+						
+					
+					*(final + (dstW - i - 1) * dstH + dp) = av_clip_uint8_c(val >> 19);
+				}
+				
+				break;
+			}	
+		}
+	}
+
+
+	//uint8_t **new_dst = desc->dst->plane[0].line + dp;///////////////
+
 
 	return 1;
 }
@@ -143,7 +218,7 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		int sp2 = first - desc->src->plane[2].sliceY;
 		int dp1 = chrSliceY - desc->dst->plane[1].sliceY;
 		int dp2 = chrSliceY - desc->dst->plane[2].sliceY;
-		printf("%d, %d\n", dp1, dp2);
+		//printf("%d, %d\n", dp1, dp2);
 		uint8_t **src1 = desc->src->plane[1].line + sp1;
 		uint8_t **src2 = desc->src->plane[2].line + sp2;
 		uint8_t **dst1 = desc->dst->plane[1].line + dp1;
@@ -256,11 +331,12 @@ int init_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc, SwsSlice *sr
 	desc[0].src = src;
 	desc[0].dst = dst;
 	desc[0].alpha = 0;
+	desc[0].dstH = c->dstH;
 
 
 	chrCtx = (VScalerContext *)malloc(sizeof(VScalerContext));
 	if (!chrCtx) { return -1; }
-	desc[1].process = chr_planar_vscale;
+	desc[1].process = chr_planar_vscaletoint;
 	desc[1].instance = chrCtx;
 	desc[1].src = src;
 	desc[1].dst = dst;

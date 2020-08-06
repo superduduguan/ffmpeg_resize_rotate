@@ -63,11 +63,10 @@ int submain()
 	
 	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 1, 3);
 	printf("%f\n", dst_data1[0][0]);
-	printf("%f\n", dst_data1[0][57778]);
-	printf("%f\n", dst_data1[0][57779]);
-	printf("%f\n", dst_data1[0][86398]);
-	printf("%f\n", dst_data1[0][86399]);
-	//printf("%f\n", dst_data1[0][86399]);
+	printf("%f\n", dst_data1[0][1]);
+	printf("%f\n", dst_data1[0][57597]);
+	printf("%f\n", dst_data1[0][57599]);
+	
 	// printf("%f\n", dst_data1[0][1]);
 	// printf("%f\n", dst_data1[0][2]);
 	// printf("%f\n", dst_data1[0][300]);
@@ -82,14 +81,21 @@ int submain()
 	uint8_t * dst_data2[3];
 	dst_data2[0] = (uint8_t *)malloc(DST_W * DST_H * sizeof(uint8_t)* 3 / 2);
 	dst_data2[2] = dst_data2[1] = dst_data2[0] + DST_W * DST_H;
-	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 0, 1);
+	//printf("add for dd2:%x\n", dst_data2[0]);
+	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 1, 3);
+	
 
 
 	//printf("%hu\n", dst_data2[0][319]);
-	printf("%hu\n", dst_data2[0][86398]);
-	printf("%hu\n", dst_data2[0][86399]);
-	printf("%hu\n", dst_data2[0][86080]);
-	printf("%hu\n", dst_data2[0][86081]);
+	// printf("%hu\n", dst_data2[0][86398]);
+	// printf("%hu\n", dst_data2[0][86399]);
+	// printf("%hu\n", dst_data2[0][86080]);
+	// printf("%hu\n", dst_data2[0][86081]);
+
+	printf("%hu\n", dst_data2[0][0]);
+	printf("%hu\n", dst_data2[0][1]);
+	printf("%hu\n", dst_data2[0][57597]);
+	printf("%hu\n", dst_data2[0][57599]);
 	// printf("%hu\n", dst_data2[0][DST_H*DST_W - 1]);
 	// printf("%hu\n", dst_data2[0][DST_H*DST_W*3/2 - 2]);
 	// printf("%hu\n", dst_data2[0][DST_H*DST_W + 1]);
@@ -98,16 +104,16 @@ int submain()
 
 
 
-	int check = 0;
-	int QW = 0;
-	for(;check<DST_H*DST_W*3/2-1;check++)
-	{	
-		float a = dst_data1[0][check];
-		uint8_t b = dst_data2[0][check];
-		if(a != b) QW ++;
-	}
-	printf("Wrong num: %d\n", QW);
-	printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
+	// int check = 0;
+	// int QW = 0;
+	// for(;check<DST_H*DST_W*3/2-1;check++)
+	// {	
+	// 	float a = dst_data1[0][check];
+	// 	uint8_t b = dst_data2[0][check];
+	// 	if(a != b) QW ++;
+	// }
+	// printf("Wrong num: %d\n", QW);
+	// printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
 
 
 	fs_freeScaleHandle(handle1);

@@ -141,7 +141,7 @@ typedef struct SwsFilterDescriptor
 
 	int alpha;      ///< Flag for processing alpha channel
 	void *instance; ///< Filter instance data
-
+	int dstH;
 					/// Function for processing input slice sliceH lines starting from line sliceY
 	int(*process)(struct fs_scale_handle *c, struct SwsFilterDescriptor *desc, int sliceY, int sliceH);
 	int(*processx)(struct fs_scale_handle *c, struct SwsFilterDescriptor *desc, int sliceY, int sliceH, int PPQ);
