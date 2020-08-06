@@ -108,16 +108,16 @@ int submain()
 
 
 
-	// int check = 0;
-	// int QW = 0;
-	// for(;check<DST_H*DST_W*3/2-1;check++)
-	// {	
-	// 	float a = dst_data1[0][check];
-	// 	uint8_t b = dst_data2[0][check];
-	// 	if(a != b) QW ++;
-	// }
-	// printf("Wrong num: %d\n", QW);
-	// printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
+	int check = 0;
+	int QW = 0;
+	for(;check<DST_H*DST_W*3/2-1;check++)
+	{	
+		float a = dst_data1[0][check];
+		uint8_t b = dst_data2[0][check];
+		if(a != b) QW ++;
+	}
+	printf("Wrong num: %d\n", QW);
+	printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
 
 
 	fs_freeScaleHandle(handle1);
