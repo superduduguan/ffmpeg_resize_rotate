@@ -720,7 +720,7 @@ int free_filters(fs_scale_handle *c)
 	// }
 	if (c->desc) 
 	{
-
+		//printf("yes\n");
 		for (i = 0; i < c->numDesc; ++i)
 		{
 			//printf("yes\n");
@@ -731,6 +731,7 @@ int free_filters(fs_scale_handle *c)
 	}
 
 	if (c->slice) {
+		//printf("yess\n");
 		for (i = 0; i < c->numSlice ; ++i)
 		{
 			//printf("%d\n", i);

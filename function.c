@@ -38,13 +38,10 @@ void yuv2nv12cX_c(fs_scale_handle * c, const int16_t * chrFilter, int chrFilterS
 
 	for (i = 0; i < chrDstW; i++)
 	{
-		int u = 0;//64/*chrDither[i & 7]*/ << 12;
-		int v = 0;//64/*chrDither[(i + 3) & 7]*/ << 12;
+		int u = 0;
+		int v = 0;
 		int j;
-		//for (j = 0; j < chrFilterSize; j++) {
-		//	u += chrUSrc[j][i] * chrFilter[j];
-		//	v += chrVSrc[j][i] * chrFilter[j];
-		//}
+
 		u += chrUSrc[0][i] * (0x1000);
 		v += chrVSrc[0][i] * (0x1000);
 

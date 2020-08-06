@@ -88,6 +88,7 @@ int alloc_slice(SwsSlice *s, int lumLines, int chrLines, int h_sub_sample, int v
 		s->plane[i].line = (uint8_t **)malloc(sizeof(uint8_t*) * n);//有n行
 		s->plane[i].tmp = ring ? s->plane[i].line + size[i] * 2 : NULL;
 		s->plane[i].available_lines = size[i];
+		//printf("__%d__", size[i]);
 		s->plane[i].sliceY = 0;
 		s->plane[i].sliceH = 0;
 	}
@@ -282,6 +283,7 @@ int rotate_slice(SwsSlice *s, int lum, int chr)
 	if (lum) {
 		for (i = 0; i < 4; i += 3) {
 			int n = s->plane[i].available_lines;
+			
 			int l = lum - s->plane[i].sliceY;
 
 			if (l >= n * 2) {

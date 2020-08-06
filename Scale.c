@@ -412,7 +412,7 @@ void fs_freeScaleHandle(fs_scale_handle * p_handle)
 	free(p_handle->hLumFilterPos);
 	free(p_handle->hChrFilterPos);
 
-	
+		
 	free_filters(p_handle);
 }
 

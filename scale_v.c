@@ -211,6 +211,7 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		//printf("asdadadsad\n");
 		VScalerContext *inst = (VScalerContext *)desc->instance;
 		int dstW = AV_CEIL_RSHIFT(desc->dst->width, desc->dst->h_chr_sub_sample);
+		//printf("%d\n", dstW);
 		int chrSliceY = sliceY >> desc->dst->v_chr_sub_sample;
 
 		int first = FFMAX(1 - inst->filter_size, inst->filter_pos[chrSliceY]);
@@ -224,8 +225,74 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		uint8_t **dst1 = desc->dst->plane[1].line + dp1;
 		uint8_t **dst2 = desc->dst->plane[2].line + dp2;
 		uint16_t *filter = inst->filter[0] + chrSliceY * inst->filter_size;
+		uint16_t **sr1 = (const int16_t**)src1;
+		uint16_t **sr2 = (const int16_t**)src2;
 
-		((yuv2interleavedX_fn)inst->pfn)(c, (const int16_t*)filter, inst->filter_size, (const int16_t**)src1, (const int16_t**)src2, dst1[0], dstW);
+		//((yuv2interleavedX_fn)inst->pfn)(c, (const int16_t*)filter, inst->filter_size, (const int16_t**)src1, (const int16_t**)src2, dst1[0], dstW);
+
+		if(c->rotate == 0)
+		{
+			printf("rotate = 0\n");
+			uint8_t *final = desc->dst->plane[1].line[0];
+			int i;
+			for (i = 0; i < dstW; i++)
+			{
+				int u = 0;
+				int v = 0;
+				int j;
+
+				u += sr1[0][i] * (0x1000);
+				v += sr2[0][i] * (0x1000);
+
+				*(final + dp1 *dstW * 2 + 2 * i + 1) = av_clip_uint8_c(v >> 19);
+				*(final + dp1 *dstW * 2 + 2 * i) = av_clip_uint8_c(u >> 19);
+			}
+
+		}
+		if(c->rotate == 1)
+		{	
+			int Y_size = c->dstH * c->dstW;
+			uint8_t *final = desc->dst->plane[1].line[0];
+			switch (c->degree)
+			{
+				case 1:
+				{
+					//printf("(1,0)\n");
+					//printf("as\n", i, dp1);
+					int i;
+					for (i = 0; i < dstW; i++)
+					{
+						int u = 0;
+						int v = 0;
+						int j;
+
+						u += sr1[0][i] * (0x1000);
+						v += sr2[0][i] * (0x1000);
+
+						//dst1[0][2 * i + 1] = av_clip_uint8_c(v >> 19);
+						//dst1[0][2 * i] = av_clip_uint8_c(u >> 19);
+						//if(Y_size + (i + 1) * c->dstH - 2- dp1 == 86220)
+						//printf("i = %d, dp1 = %d, u_index = %d, v_index = %d\n", i, dp1, i * c->dstH - 2 - 2 * dp1, i * c->dstH - 1 - 2 * dp1);
+						*(final + (i+1) * c->dstH - 2 - 2 * dp1) = av_clip_uint8_c(u >> 19);
+						*(final + (i+1) * c->dstH - 1 - 2 * dp1) = av_clip_uint8_c(v >> 19);
+						//printf("%d\n", av_clip_uint8_c(u >> 19));
+					}
+
+
+					break;
+				}
+				case 2:
+				{
+					
+					break;
+				}
+				case 3:
+				{
+					break;
+				}
+			}
+		}
+
 	}
 
 	return 1;
