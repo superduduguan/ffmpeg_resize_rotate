@@ -252,6 +252,7 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		if(c->rotate == 1)
 		{	
 			int Y_size = c->dstH * c->dstW;
+			int UV_size = Y_size / 2;
 			uint8_t *final = desc->dst->plane[1].line[0];
 			switch (c->degree)
 			{
@@ -278,16 +279,55 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 						//printf("%d\n", av_clip_uint8_c(u >> 19));
 					}
 
-
 					break;
 				}
 				case 2:
 				{
+					int i;
+					for (i = 0; i < dstW; i++)
+					{
+						int u = 0;
+						int v = 0;
+						int j;
+
+						u += sr1[0][i] * (0x1000);
+						v += sr2[0][i] * (0x1000);
+
+						//dst1[0][2 * i + 1] = av_clip_uint8_c(v >> 19);
+						//dst1[0][2 * i] = av_clip_uint8_c(u >> 19);
+						//if(Y_size + (i + 1) * c->dstH - 2- dp1 == 86220)
+						//printf("i = %d, dp1 = %d, u_index = %d, v_index = %d\n", i, dp1, i * c->dstH - 2 - 2 * dp1, i * c->dstH - 1 - 2 * dp1);
+						//printf("index_u = %d, index_v = %d\n", UV_size - 2 - 2 * i - dp1 * c->dstW, UV_size - 2 * i - dp1 * c->dstW);
+						*(final + UV_size - 2 - 2 * i - dp1 * c->dstW) = av_clip_uint8_c(u >> 19);
+						*(final + UV_size - 2 * i - dp1 * c->dstW - 1) = av_clip_uint8_c(v >> 19);
+						//printf("%d\n", av_clip_uint8_c(u >> 19));
+					}
+
 					
 					break;
 				}
 				case 3:
 				{
+					int i;
+					for (i = 0; i < dstW; i++)
+					{
+						int u = 0;
+						int v = 0;
+						int j;
+
+						u += sr1[0][i] * (0x1000);
+						v += sr2[0][i] * (0x1000);
+
+						//dst1[0][2 * i + 1] = av_clip_uint8_c(v >> 19);
+						//dst1[0][2 * i] = av_clip_uint8_c(u >> 19);
+						//if(Y_size + (i + 1) * c->dstH - 2- dp1 == 86220)
+						//printf("i = %d, dp1 = %d, u_index = %d, v_index = %d\n", i, dp1, i * c->dstH - 2 - 2 * dp1, i * c->dstH - 1 - 2 * dp1);
+						//printf("index_u = %d, index_v = %d\n",  (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1, (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1 + 1);
+						
+						*(final + (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1) = av_clip_uint8_c(u >> 19);
+						*(final + (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1 + 1) = av_clip_uint8_c(v >> 19);
+						//printf("%d\n", av_clip_uint8_c(u >> 19));
+					}
 					break;
 				}
 			}
