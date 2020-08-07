@@ -24,7 +24,7 @@ void yuv2planeX_8_c(const int16_t * filter, int filterSize, const int16_t ** src
 		for (j = 0; j<filterSize; j++)
 		
 			val += src[j][i] * filter[j];
-
+	
 		dest[i] = av_clip_uint8_c(val >> 19);
 	}
 }
@@ -41,10 +41,11 @@ void yuv2nv12cX_c(fs_scale_handle * c, const int16_t * chrFilter, int chrFilterS
 		int u = 0;
 		int v = 0;
 		int j;
-
+		//printf("%e\n", u);
+		
 		u += chrUSrc[0][i] * (0x1000);
 		v += chrVSrc[0][i] * (0x1000);
-
+		//printf("%d\n", av_clip_uint8_c(v >> 19));
 		dest[2 * i + 1] = av_clip_uint8_c(v >> 19);
 		dest[2 * i] = av_clip_uint8_c(u >> 19);
 	}

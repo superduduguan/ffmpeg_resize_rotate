@@ -136,7 +136,7 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 	float * final = desc->dst->plane[0].line[0];
 	int Y_size = DST_H * DST_W;
 	int YUV_size = DST_H * DST_W * 3 / 2;
-
+	
 
 
 	switch (c->degree)

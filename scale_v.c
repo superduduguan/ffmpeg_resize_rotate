@@ -24,10 +24,11 @@ static int lum_planar_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, int 
 	uint16_t *filter = inst->filter[0] + sliceY * inst->filter_size;
 	
 
-	if (inst->filter_size == 1)
-		((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8, 0);
-	else
-		((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
+	// if (inst->filter_size == 1)
+	// 	((yuv2planar1_fn)inst->pfn)((const int16_t*)src[0], dst[0], dstW, c->lumDither8, 0);
+	// else
+	//printf("%d\n",src[0][0]);
+	((yuv2planarX_fn)inst->pfn)((int16_t *)filter, inst->filter_size, (const int16_t**)src, dst[0], dstW, c->lumDither8, 0);
 
 		
 
@@ -68,11 +69,6 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 	
 	uint16_t *filter = inst->filter[0] + sliceY * inst->filter_size;
 	uint16_t **sr = (const int16_t**)src;
-	//printf("address for new_dst : %x\n", desc->dst->plane[0].line[0]);
-	
-
-
-
 
 	uint8_t *final = desc->dst->plane[0].line[0];
 	switch (c->degree)
