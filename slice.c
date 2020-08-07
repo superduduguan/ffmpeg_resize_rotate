@@ -222,8 +222,7 @@ int init_slice_from_dst(SwsSlice * s, float *src[4], int stride[4], int srcW, in
 		}
 		
 	}
-	printf("address for s->plane[0].line[0] is %x\n", s->plane[0].line[0]);
-	//free(src);
+
 	return 0;
 }
 

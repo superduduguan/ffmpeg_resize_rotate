@@ -481,17 +481,8 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 	init_slice_from_src(src_slice, (uint8_t**)src, srcStride, c->srcW,
 		srcSliceY, srcSliceH, chrSrcSliceY, chrSrcSliceH, 1);
 
-
-	{
-		printf("dst[0]:%x\n", dst[0]);
-
-		init_slice_from_dst(out_slice, (float**)dst, dstStride, c->dstW,
-			dstY, dstH, dstY >> c->chrDstVSubSample, AV_CEIL_RSHIFT(dstH, c->chrDstVSubSample), 0);
-
-		//free(data[0]);
-	}
-
-
+	init_slice_from_dst(out_slice, (float**)dst, dstStride, c->dstW,
+		dstY, dstH, dstY >> c->chrDstVSubSample, AV_CEIL_RSHIFT(dstH, c->chrDstVSubSample), 0);
 
 	if (srcSliceY == 0) {
 		hout_slice->plane[0].sliceY = lastInLumBuf + 1;
@@ -597,9 +588,6 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 				desc[i].process(c, &desc[i], firstCPosY, lastCPosY - firstCPosY + 1);
 		}
 
-		// int PPP = 0;
-		// for(;PPP<380;++PPP)printf("..............%hu..............\n", *(dst[1] + PPP));
-	
 		chrBufIndex += lastChrSrcY - lastInChrBuf;
 		lastInChrBuf = lastChrSrcY;
 
@@ -618,33 +606,19 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 
 			init_vscale_pfn(c, yuv2planeX_8_c, yuv2nv12cX_c);
 		}
-//printf("%d", vEnd);
 		{
 			for (i = vStart; i < vEnd; ++i)
 			{
 				desc[i].process(c, &desc[i], dstY, 1);
 			}
 		}
-		//printf("\ndsty:%d\n", dstY);
 
 		desc[5].processx(c, &desc[5], dstY, 1, yeah);
-		//printf("%d", dst[0][0]);
 		
 		yeah ++;
 		
 		
 	}
-
-	//printf("%d", dst[0][0]);
-	/* store changed local vars back in the context */
-	//c->dstY = dstY;
-	//c->lumBufIndex = lumBufIndex;
-	//c->chrBufIndex = chrBufIndex;
-	//c->lastInLumBuf = lastInLumBuf;
-	//c->lastInChrBuf = lastInChrBuf;
-	
-
-
 
 	return dstY - lastDstY;
 }
