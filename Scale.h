@@ -150,15 +150,15 @@ typedef struct SwsFilterDescriptor
 
 int my_sws_scale(fs_scale_handle *c, const uint8_t *const srcSlice[],
 	const int srcStride[], int srcSliceY, int srcSliceH,
-	float *const dst[], const int dstStride[], int degree);
+	float *const dst[], const int dstStride[], int rotate, int degree);
 
 int my_sws_scaletoint(fs_scale_handle *c, const uint8_t *const srcSlice[],
 	const int srcStride[], int srcSliceY, int srcSliceH,
-	uint8_t *const dst[], const int dstStride[], int degree);
+	uint8_t *const dst[], const int dstStride[], int rotate, int degree);
 
 int scale(fs_scale_handle *c, const uint8_t *const srcSlice[],
 	const int srcStride[], int srcSliceY, int srcSliceH,
-	void *const dst[], const int dstStride[], int degree);
+	void *const dst[], const int dstStride[], int rotate, int degree);
 
 //typedef int(*SwsFunc)(fs_scale_handle *context, const uint8_t *src[],
 //	int srcStride[], int srcSliceY, int srcSliceH,

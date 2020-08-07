@@ -61,7 +61,7 @@ int submain()
 	dst_data1[0] = (float *)malloc(DST_W * DST_H * sizeof(float)* 3 / 2);
 	dst_data1[2] = dst_data1[1] = dst_data1[0] + DST_W * DST_H;
 	
-	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0);
+	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 1, 3);
 	printf("%f\n", dst_data1[0][0]);
 	printf("%f\n", dst_data1[0][1]);
 	printf("%f\n", dst_data1[0][57600]);
@@ -84,7 +84,7 @@ int submain()
 	dst_data2[0] = (uint8_t *)malloc(DST_W * DST_H * sizeof(uint8_t)* 3 / 2);
 	dst_data2[2] = dst_data2[1] = dst_data2[0] + DST_W * DST_H;
 	//printf("add for dd2:%x\n", dst_data2[0]);
-	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 0);
+	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 1, 3);
 	
 
 
