@@ -385,9 +385,27 @@ int init_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, SwsSlice *src, Sw
 	desc[1].src = src;
 	desc[1].dst = dst;
 
-	// TODO : cancel this function
-	init_vscale_pfn(c, yuv2planeX_8_c, yuv2nv12cX_c);
+	// TODO!
+	
+	lumCtx = NULL;
+	chrCtx = NULL;
+	int idx = c->numDesc - 2; //FIXME avoid hardcoding indexes
 
+	chrCtx = (VScalerContext *)c->desc[idx].instance;
+	chrCtx->filter[0] = (uint16_t *)c->vChrFilter;
+	chrCtx->filter_size = c->vChrFilterSize;
+	chrCtx->filter_pos = c->vChrFilterPos;
+
+	--idx;
+	chrCtx->pfn = (void *)yuv2nv12cX_c;
+
+
+	lumCtx = (VScalerContext *)c->desc[idx].instance;
+	lumCtx->filter[0] = (uint16_t *)c->vLumFilter;
+	lumCtx->filter[1] = (uint16_t *)c->vLumFilter;
+	lumCtx->filter_size = c->vLumFilterSize;
+	lumCtx->filter_pos = c->vLumFilterPos;
+	lumCtx->pfn = (void *)yuv2planeX_8_c;
 	
 	return 0;
 }
@@ -417,9 +435,27 @@ int init_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc, SwsSlice *sr
 	desc[1].src = src;
 	desc[1].dst = dst;
 
-	// TODO : cancel this function
-	init_vscale_pfntoint(c, yuv2planeX_8_c, yuv2nv12cX_c);
+	// TODO!
 
+	lumCtx = NULL;
+	chrCtx = NULL;
+	int idx = c->numDesc - 1; //FIXME avoid hardcoding indexes
+
+	chrCtx = (VScalerContext *)c->desc[idx].instance;
+	chrCtx->filter[0] = (uint16_t *)c->vChrFilter;
+	chrCtx->filter_size = c->vChrFilterSize;
+	chrCtx->filter_pos = c->vChrFilterPos;
+
+	--idx;
+	chrCtx->pfn = (void *)yuv2nv12cX_c;
+
+
+	lumCtx = (VScalerContext *)c->desc[idx].instance;
+	lumCtx->filter[0] = (uint16_t *)c->vLumFilter;
+	lumCtx->filter[1] = (uint16_t *)c->vLumFilter;
+	lumCtx->filter_size = c->vLumFilterSize;
+	lumCtx->filter_pos = c->vLumFilterPos;
+	lumCtx->pfn = (void *)yuv2planeX_8_c;
 	
 	return 0;
 }

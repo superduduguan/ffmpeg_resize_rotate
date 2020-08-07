@@ -539,7 +539,7 @@ int init_filters(fs_scale_handle * c, float *x, float * y)
 
 	int lumBufSize;
 	int chrBufSize;
-
+	int i;
 	// TODO : remove these func
 	get_min_buffer_size(c, &lumBufSize, &chrBufSize);
 	lumBufSize = FFMAX(lumBufSize, c->vLumFilterSize + 4);
@@ -625,7 +625,29 @@ int init_filters(fs_scale_handle * c, float *x, float * y)
 	return 0;
 
 cleanup:
-	// TODO : resource clean not done
+	// TODO !
+	
+	if (c->desc) 
+	{
+		for (i = 0; i < c->numDesc; ++i)
+		{
+			if(c->desc[i].instance)
+			free(c->desc[i].instance);
+		}
+		free(c->desc);
+		c->desc = NULL;
+	}
+
+	if (c->slice) 
+	{
+		for (i = 0; i < c->numSlice ; ++i)
+		{
+			if(&c->slice[i])
+			free_slice(&c->slice[i]);//////
+		}	
+		free(c->slice);
+		c->slice = NULL;
+	}
 	return res;
 }
 
@@ -650,6 +672,7 @@ int init_filterstoint(fs_scale_handle * c, float *x, float * y)
 	/// slice 3 : storage for vscale output(dst)
 	/// slice 0&3 uses input&output memory. slice 1&2 need extra memory allocated.
 	c->numSlice = 4;
+	int i;
 	/// 5 Descs
 	/// Descs 0 : (slice 0) lum part hscale to (slice 2)
 	/// Descs 1 : (slice 0) convert chr part to (slice 1). (nv21 to yuv420p)
@@ -705,7 +728,29 @@ int init_filterstoint(fs_scale_handle * c, float *x, float * y)
 	return 0;
 
 cleanup:
-	// TODO : resource clean not done
+	// TODO !
+	
+	if (c->desc) 
+	{
+		for (i = 0; i < c->numDesc; ++i)
+		{
+			if(c->desc[i].instance)
+			free(c->desc[i].instance);
+		}
+		free(c->desc);
+		c->desc = NULL;
+	}
+
+	if (c->slice) 
+	{
+		for (i = 0; i < c->numSlice ; ++i)
+		{
+			if(&c->slice[i])
+			free_slice(&c->slice[i]);//////
+		}	
+		free(c->slice);
+		c->slice = NULL;
+	}
 	return res;
 }
 
@@ -714,33 +759,24 @@ cleanup:
 int free_filters(fs_scale_handle *c)
 {
 	int i;
-	// if(c->toint == 1){
-	// 	c->numSlice --;
-	// 	c->numDesc --;
-	// }
 	if (c->desc) 
 	{
-		//printf("yes\n");
 		for (i = 0; i < c->numDesc; ++i)
 		{
-			//printf("yes\n");
 			free(c->desc[i].instance);
 		}
 		free(c->desc);
 		c->desc = NULL;
 	}
 
-	if (c->slice) {
-		//printf("yess\n");
+	if (c->slice) 
+	{
 		for (i = 0; i < c->numSlice ; ++i)
 		{
-			//printf("%d\n", i);
 			free_slice(&c->slice[i]);//////
-			//printf("Y1313\n");
 		}	
 		free(c->slice);
 		c->slice = NULL;
-		//printf("Yss\n");
 	}
 	return 0;
 }

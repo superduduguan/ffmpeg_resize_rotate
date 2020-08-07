@@ -84,11 +84,9 @@ int alloc_slice(SwsSlice *s, int lumLines, int chrLines, int h_sub_sample, int v
 	for (i = 0; i < 4; ++i)
 	{
 		int n = size[i] * (ring == 0 ? 1 : 3);
-		//printf("n = %d", n);
 		s->plane[i].line = (uint8_t **)malloc(sizeof(uint8_t*) * n);//有n行
 		s->plane[i].tmp = ring ? s->plane[i].line + size[i] * 2 : NULL;
 		s->plane[i].available_lines = size[i];
-		//printf("__%d__", size[i]);
 		s->plane[i].sliceY = 0;
 		s->plane[i].sliceH = 0;
 	}
@@ -119,7 +117,6 @@ int alloc_slicex(SwsSlice *s, int lumLines, int chrLines, int h_sub_sample, int 
 		s->plane[i].sliceY = 0;
 		s->plane[i].sliceH = 0;
 	}
-	//printf("\n");
 	return 0;
 }
 
@@ -168,7 +165,6 @@ int init_slice_from_src(SwsSlice * s, uint8_t *src[4], int stride[4], int srcW, 
 		}
 
 	}
-	//free(src);
 	return 0;
 }
 
