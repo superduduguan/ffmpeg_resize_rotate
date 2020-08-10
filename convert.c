@@ -3,13 +3,6 @@
 
 
 int helper = 0;
-
-
-
-
-
-
-
 typedef struct ColorContext
 {
 	uint32_t *pal;
@@ -27,7 +20,8 @@ static int lum_convert(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY
 	desc->dst->plane[3].sliceY = sliceY;
 	desc->dst->plane[3].sliceH = sliceH;
 
-	for (i = 0; i < sliceH; ++i) {
+	for (i = 0; i < sliceH; ++i) 
+	{
 		int sp0 = sliceY + i - desc->src->plane[0].sliceY;
 		int sp1 = ((sliceY + i) >> desc->src->v_chr_sub_sample) - desc->src->plane[1].sliceY;
 		const uint8_t * src[4] = { desc->src->plane[0].line[sp0],
@@ -35,9 +29,7 @@ static int lum_convert(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY
 			desc->src->plane[2].line[sp1],
 			desc->src->plane[3].line[sp0] };
 		uint8_t * dst = desc->dst->plane[0].line[i];
-
 	}
-
 	return sliceH;
 }
 
@@ -79,7 +71,6 @@ int init_desc_fmt_convert(SwsFilterDescriptor *desc, SwsSlice * src, SwsSlice *d
 		return -1;
 	li->pal = pal;
 	desc->instance = li;
-
 	desc->alpha = 0;
 	desc->src = src;
 	desc->dst = dst;
@@ -91,12 +82,8 @@ int init_desc_fmt_convert(SwsFilterDescriptor *desc, SwsSlice * src, SwsSlice *d
 int init_desc_cfmt_convert(SwsFilterDescriptor *desc, SwsSlice * src, SwsSlice *dst, uint32_t *pal)
 {
 	ColorContext * li = (ColorContext *)malloc(sizeof(ColorContext));
-	if (!li)
-		{
-			return -1;
-		}
+	if (!li) return -1;
 	desc->instance = li;
-
 	desc->src = src;
 	desc->dst = dst;
 	desc->process = &chr_convert;
@@ -136,8 +123,6 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 	float * final = desc->dst->plane[0].line[0];
 	int Y_size = DST_H * DST_W;
 	int YUV_size = DST_H * DST_W * 3 / 2;
-	
-
 
 	switch (c->degree)
 	{
@@ -156,77 +141,73 @@ static int DDG(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sl
 			}
 			break;
 		}
-	case 1://90
-	
-		for(BBQ = 0; BBQ < DST_W; BBQ++)
-			{
-				dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
-				*(final + (BBQ + 1) * DST_H - 1 - PPQ) = (float)(dst1 + x)* y;
 
-				if(~PPQ & 0x0001)
-				{
-					dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
-					if(~BBQ & 0x0001)//U
-					{	
-						*(final + Y_size + (BBQ/2 + 1) * DST_H - 2- PPQ)  = (float)(dst2 + x)* y;
-					}
-					if(BBQ & 0x0001)//V
-					{
-						*(final + Y_size + (BBQ/2 + 1) * DST_H - 1- PPQ)  = (float)(dst2 + x)* y;
-					}
-				}
-			}
-		break;
-	
-
-	case 2://180 ok
-		{
-
+		case 1://90
 			for(BBQ = 0; BBQ < DST_W; BBQ++)
-			{
-				dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
-				*(final + Y_size - 1 - BBQ - PPQ * DST_W) = (float)(dst1 + x)* y;
-
-				if(~PPQ & 0x0001)
 				{
-					dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
-					if(~BBQ & 0x0001)//u
+					dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
+					*(final + (BBQ + 1) * DST_H - 1 - PPQ) = (float)(dst1 + x)* y;
+
+					if(~PPQ & 0x0001)
 					{
-						*(final + YUV_size - 2 - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
-					}
-					if(BBQ & 0x0001)//v
-					{
-						*(final + YUV_size  - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
+						dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
+						if(~BBQ & 0x0001)//U
+						{	
+							*(final + Y_size + (BBQ/2 + 1) * DST_H - 2- PPQ)  = (float)(dst2 + x)* y;
+						}
+						if(BBQ & 0x0001)//V
+						{
+							*(final + Y_size + (BBQ/2 + 1) * DST_H - 1- PPQ)  = (float)(dst2 + x)* y;
+						}
 					}
 				}
+			break;
+		
+		case 2://180 ok
+			{
+				for(BBQ = 0; BBQ < DST_W; BBQ++)
+				{
+					dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
+					*(final + Y_size - 1 - BBQ - PPQ * DST_W) = (float)(dst1 + x)* y;
+
+					if(~PPQ & 0x0001)
+					{
+						dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
+						if(~BBQ & 0x0001)//u
+						{
+							*(final + YUV_size - 2 - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
+						}
+						if(BBQ & 0x0001)//v
+						{
+							*(final + YUV_size  - BBQ - PPQ * DST_W / 2 )  = (float)(dst2 + x)* y;
+						}
+					}
+				}
+				break;
 			}
+
+		case 3://270
+			for(BBQ = 0; BBQ < DST_W; BBQ++)
+				{
+					dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
+					*(final + (DST_W - BBQ - 1) * DST_H + PPQ) = (float)(dst1 + x)* y;//ok
+					
+					if(~PPQ & 0x0001)
+					{
+						dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
+						if(~BBQ & 0x0001)//u
+						{
+							*(final + Y_size + (DST_W / 2 - BBQ/2 - 1) * DST_H + PPQ)  = (float)(dst2 + x)* y;
+						}
+						if(BBQ & 0x0001)//v
+						{
+							*(final + Y_size + (DST_W / 2 - BBQ/2 - 1) * DST_H + PPQ + 1)  = (float)(dst2 + x)* y;
+						}
+					}
+				}
 			break;
 		}
-	case 3://270
-		for(BBQ = 0; BBQ < DST_W; BBQ++)
-			{
-				dst1 = *(*(desc->src->plane[0].line + sp0/2) + BBQ);//新图中Y的第PPQ行第BBQ个
-				*(final + (DST_W - BBQ - 1) * DST_H + PPQ) = (float)(dst1 + x)* y;//ok
-				
-				if(~PPQ & 0x0001)
-				{
-					dst2 = *(*(desc->src->plane[1].line + sp1/2) + BBQ);//新图中UV的第PPQ/2行第BBQ个
-					if(~BBQ & 0x0001)//u
-					{
-						*(final + Y_size + (DST_W / 2 - BBQ/2 - 1) * DST_H + PPQ)  = (float)(dst2 + x)* y;
-					}
-					if(BBQ & 0x0001)//v
-					{
-						*(final + Y_size + (DST_W / 2 - BBQ/2 - 1) * DST_H + PPQ + 1)  = (float)(dst2 + x)* y;
-					}
-				}
-			}
-		break;
-	}
-
 	return sliceH;
-	
-
 }
 
 

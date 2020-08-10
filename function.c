@@ -9,20 +9,21 @@ uint8_t av_clip_uint8_c(int a)
 void yuv2plane1_8_c(const int16_t * src, uint8_t * dest, int dstW, const uint8_t * dither, int offset)
 {
 	int i;
-	for (i = 0; i<dstW; i++) {
+	for (i = 0; i<dstW; i++) 
+	{
 		int val = (src[i] + dither[(i + offset) & 7]) >> 7;
-		dest[i] = av_clip_uint8_c(val);
+		dest[i] = av_clip_uint8_c(val); 
 	}
 }
 
 void yuv2planeX_8_c(const int16_t * filter, int filterSize, const int16_t ** src, uint8_t * dest, int dstW, const uint8_t * dither, int offset)
 {
 	int i;
-	for (i = 0; i<dstW; i++) {
-		int val = 0;//dither[(i + offset) & 7] << 12;
+	for (i = 0; i<dstW; i++) 
+	{
+		int val = 0;
 		int j;
 		for (j = 0; j<filterSize; j++)
-		
 			val += src[j][i] * filter[j];
 	
 		dest[i] = av_clip_uint8_c(val >> 19);
@@ -35,17 +36,14 @@ void yuv2nv12cX_c(fs_scale_handle * c, const int16_t * chrFilter, int chrFilterS
 	const uint8_t *chrDither = c->chrDither8;
 	int i;
 
-
 	for (i = 0; i < chrDstW; i++)
 	{
 		int u = 0;
 		int v = 0;
 		int j;
-		//printf("%e\n", u);
 		
 		u += chrUSrc[0][i] * (0x1000);
 		v += chrVSrc[0][i] * (0x1000);
-		//printf("%d\n", av_clip_uint8_c(v >> 19));
 		dest[2 * i + 1] = av_clip_uint8_c(v >> 19);
 		dest[2 * i] = av_clip_uint8_c(u >> 19);
 	}
@@ -54,8 +52,9 @@ void yuv2nv12cX_c(fs_scale_handle * c, const int16_t * chrFilter, int chrFilterS
 void nvXXtoUV_c(uint8_t * dst1, uint8_t * dst2, const uint8_t * src, int width)
 {
 	int i;
-	for (i = 0; i < width; i++) {
-		dst1[i] = src[2 * i + 0];
+	for (i = 0; i < width; i++) 
+	{
+		dst1[i] = src[2 * i];
 		dst2[i] = src[2 * i + 1];
 	}
 }

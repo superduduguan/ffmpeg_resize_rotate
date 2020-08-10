@@ -83,7 +83,7 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 				int j;
 				
 				for (j = 0; j<inst->filter_size; j++)
-					val += sr[j][i] * (int16_t)filter[j];
+					{val += sr[j][i] * (int16_t)filter[j];}
 
 				dst[0][i] = av_clip_uint8_c(val >> 19);
 			}
@@ -149,12 +149,6 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 			break;
 		}	
 	}
-
-
-
-	//uint8_t **new_dst = desc->dst->plane[0].line + dp;///////////////
-
-
 	return 1;
 }
 
@@ -164,13 +158,9 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 static int chr_planar_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sliceH)
 {
 	const int chrSkipMask = (1 << desc->dst->v_chr_sub_sample) - 1;
-	//printf("asdadadsad\n");
-	if (sliceY & chrSkipMask){
-		//printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		return 0;
-	}
-		
-	else {
+	if (sliceY & chrSkipMask)return 0;
+	else 
+	{
 		VScalerContext *inst = (VScalerContext *)desc->instance;
 		int dstW = AV_CEIL_RSHIFT(desc->dst->width, desc->dst->h_chr_sub_sample);
 		int chrSliceY = sliceY >> desc->dst->v_chr_sub_sample;
@@ -185,8 +175,14 @@ static int chr_planar_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, int 
 		uint8_t **dst1 = desc->dst->plane[1].line + dp1;
 		uint8_t **dst2 = desc->dst->plane[2].line + dp2;
 		uint16_t *filter = inst->filter[0] + chrSliceY * inst->filter_size;
-		
-		((yuv2interleavedX_fn)inst->pfn)(c, (const int16_t*)filter, inst->filter_size, (const int16_t**)src1, (const int16_t**)src2, dst1[0], dstW);
+		uint16_t **sr1 = (const int16_t**)src1;
+		uint16_t **sr2 = (const int16_t**)src2;
+		int i;
+		for (i = 0; i < dstW; i++)
+		{
+			dst1[0][2 * i + 1] = sr2[0][i] >> 7;
+			dst1[0][2 * i] = sr1[0][i] >> 7;
+		}
 	}
 	return 1;
 }
@@ -219,10 +215,10 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		uint16_t *filter = inst->filter[0] + chrSliceY * inst->filter_size;
 		uint16_t **sr1 = (const int16_t**)src1;
 		uint16_t **sr2 = (const int16_t**)src2;
-
 		int Y_size = c->dstH * c->dstW;
 		int UV_size = Y_size / 2;
 		uint8_t *final = desc->dst->plane[1].line[0];
+
 		switch (c->degree)
 		{
 			case 0:
@@ -230,15 +226,8 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 				int i;
 				for (i = 0; i < dstW; i++)
 				{
-					int u = 0;
-					int v = 0;
-					int j;
-
-					u += sr1[0][i] * (0x1000);
-					v += sr2[0][i] * (0x1000);
-
-					*(final + dp1 *dstW * 2 + 2 * i + 1) = av_clip_uint8_c(v >> 19);
-					*(final + dp1 *dstW * 2 + 2 * i) = av_clip_uint8_c(u >> 19);
+					*(final + dp1 *dstW * 2 + 2 * i + 1) = sr2[0][i] >> 7;
+					*(final + dp1 *dstW * 2 + 2 * i) = sr1[0][i] >> 7;
 				}
 				break;
 
@@ -250,15 +239,8 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 				int i;
 				for (i = 0; i < dstW; i++)
 				{
-					int u = 0;
-					int v = 0;
-					int j;
-
-					u += sr1[0][i] * (0x1000);
-					v += sr2[0][i] * (0x1000);
-
-					*(final + (i+1) * c->dstH - 2 - 2 * dp1) = av_clip_uint8_c(u >> 19);
-					*(final + (i+1) * c->dstH - 1 - 2 * dp1) = av_clip_uint8_c(v >> 19);
+					*(final + (i+1) * c->dstH - 2 - 2 * dp1) = sr1[0][i] >> 7;
+					*(final + (i+1) * c->dstH - 1 - 2 * dp1) = sr2[0][i] >> 7;
 				}
 
 				break;
@@ -268,15 +250,8 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 				int i;
 				for (i = 0; i < dstW; i++)
 				{
-					int u = 0;
-					int v = 0;
-					int j;
-
-					u += sr1[0][i] * (0x1000);
-					v += sr2[0][i] * (0x1000);
-
-					*(final + UV_size - 2 - 2 * i - dp1 * c->dstW) = av_clip_uint8_c(u >> 19);
-					*(final + UV_size - 2 * i - dp1 * c->dstW - 1) = av_clip_uint8_c(v >> 19);
+					*(final + UV_size - 2 - 2 * i - dp1 * c->dstW) = sr1[0][i] >> 7;
+					*(final + UV_size - 2 * i - dp1 * c->dstW - 1) = sr2[0][i] >> 7;
 				}
 
 				
@@ -287,15 +262,8 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 				int i;
 				for (i = 0; i < dstW; i++)
 				{
-					int u = 0;
-					int v = 0;
-					int j;
-
-					u += sr1[0][i] * (0x1000);
-					v += sr2[0][i] * (0x1000);
-
-					*(final + (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1) = av_clip_uint8_c(u >> 19);
-					*(final + (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1 + 1) = av_clip_uint8_c(v >> 19);
+					*(final + (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1) = sr1[0][i] >> 7;
+					*(final + (c->dstW / 2 - i - 1) * c->dstH + 2 * dp1 + 1) = sr2[0][i] >> 7;
 				}
 				break;
 			}

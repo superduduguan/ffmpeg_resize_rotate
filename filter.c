@@ -393,7 +393,6 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 	}
 
 	// FIXME try to align filterPos if possible
-
 	// fix borders
 	for (i = 0; i < dstW; i++) {
 		int j;

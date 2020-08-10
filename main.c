@@ -6,7 +6,7 @@
 #define SRC_W	1920
 #define SRC_H	1080
 
-#define DST_W	920
+#define DST_W	320
 #define DST_H	180
 
 #define add	0.0
@@ -57,22 +57,23 @@ void main()
 	dst_data2[0] = (uint8_t *)malloc(DST_W * DST_H * sizeof(uint8_t)* 3 / 2);
 	dst_data2[2] = dst_data2[1] = dst_data2[0] + DST_W * DST_H;
 
-	//最后一个参数设定旋转情况
-	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 3);
+	//最后一个参数设定旋转情况: 0->0, 1->90, 2->180, 3->270
+	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 0);
 	
 	float * dst_data1[3];
 	dst_data1[0] = (float *)malloc(DST_W * DST_H * sizeof(float)* 3 / 2);
 	dst_data1[2] = dst_data1[1] = dst_data1[0] + DST_W * DST_H;
 	
-	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 3);
+	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0);
 
 	int check = 0;
 	int QW = 0;
-	for(;check<DST_H*DST_W*-1;check++)
+	for(;check<DST_H*DST_W*3/2-1;check++)
 	{	
 		float a = dst_data1[0][check];
-		uint8_t b = dst_data2[0][check];
-		if(a != b) {QW ++;}//printf("%d, %d, %f\n", check, dst_data2[0][check], dst_data1[0][check]);}
+		
+		uint8_t b =  dst_data2[0][check];
+		if(a != b) {QW ++;}
 	}
 	printf("Wrong num: %d\n", QW);
 	printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
