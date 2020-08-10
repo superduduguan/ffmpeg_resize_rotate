@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #define SRC_W	1920
 #define SRC_H	1080
 
-#define DST_W	320
+#define DST_W	920
 #define DST_H	180
 
 #define add	0.0
@@ -49,7 +50,7 @@ void main()
 	float a = add;
 	float b = mul;
 
-	//最后三个参数设定输出格式
+	//最后三个参数设定输出格式:a、b表示加数和乘数， 1/0表示输出为int/float格式 
 	fs_scale_handle * handle2 = fs_getScaleHandle(SRC_W, SRC_H, (FS_IMG_FMT_S)FS_IMG_TYPE_YUV420SP, DST_W, DST_H, (FS_IMG_FMT_S)FS_IMG_TYPE_YUV420SP, 1, &a, &b, 1);
 	fs_scale_handle * handle1 = fs_getScaleHandle(SRC_W, SRC_H, (FS_IMG_FMT_S)FS_IMG_TYPE_YUV420SP, DST_W, DST_H, (FS_IMG_FMT_S)FS_IMG_TYPE_YUV420SP, 1, &a, &b, 0);
 
@@ -57,26 +58,39 @@ void main()
 	dst_data2[0] = (uint8_t *)malloc(DST_W * DST_H * sizeof(uint8_t)* 3 / 2);
 	dst_data2[2] = dst_data2[1] = dst_data2[0] + DST_W * DST_H;
 
-	//最后一个参数设定旋转情况: 0->0, 1->90, 2->180, 3->270
+	//最后一个参数设定旋转情况: 0->0°, 1->90°, 2->180°, 3->270°
 	scale(handle2, src_data, src_stride, 0, SRC_H, dst_data2, dst_stride, 0);
 	
 	float * dst_data1[3];
 	dst_data1[0] = (float *)malloc(DST_W * DST_H * sizeof(float)* 3 / 2);
 	dst_data1[2] = dst_data1[1] = dst_data1[0] + DST_W * DST_H;
 	
-	scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0);
+	clock_t start,finish; //定义开始，结束变量
+	start = clock();//初始化
+	int P = 0;
+	for(; P<1;P++)scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0);
+	finish = clock();//初始化结束时间
+	double duration = (double)(finish - start) / CLOCKS_PER_SEC;//转换浮点型
+	printf( "%lf seconds\n", duration );
+	
+	//printf("%d\n", dst_data2[0][0]);
+	//printf("%d\n", dst_data2[0][DST_H*DST_W*3/2-1]);
 
 	int check = 0;
 	int QW = 0;
 	for(;check<DST_H*DST_W*3/2-1;check++)
 	{	
 		float a = dst_data1[0][check];
-		
 		uint8_t b =  dst_data2[0][check];
-		if(a != b) {QW ++;}
+		if(a != b) 
+		{
+			QW ++;
+			printf("%d<->%f\n", dst_data2[0][check], dst_data1[0][check]);
+		}
 	}
 	printf("Wrong num: %d\n", QW);
-	printf("tOTAL num: %d\n", DST_H*DST_W*3/2);
+	printf("tOTAL num: %d\n", DST_H * DST_W * 3 / 2);
+
 
 	fs_freeScaleHandle(handle1);
 	fs_freeScaleHandle(handle2);

@@ -158,28 +158,22 @@ static int init_handle(fs_scale_handle * p_handle ,float *x, float *y)
 	desc_src = av_pix_fmt_desc_get((FS_IMG_FMT_S)srcFormat);
 	desc_dst = av_pix_fmt_desc_get((FS_IMG_FMT_S)dstFormat);
 
-
-	/* sanity check */
 	if (srcW < 1 || srcH < 1 || dstW < 1 || dstH < 1) { return -1; }
 
 	p_handle->lumXInc = (((fs_int64)srcW << 16) + (dstW >> 1)) / dstW;
 	p_handle->lumYInc = (((fs_int64)srcH << 16) + (dstH >> 1)) / dstH;
 	p_handle->dstFormatBpp = 16; //av_get_bits_per_pixel(desc_dst);		// 16
 	p_handle->srcFormatBpp = 16; // av_get_bits_per_pixel(desc_src);	// 16
-
 	p_handle->chrSrcHSubSample = 1;
 	p_handle->chrSrcVSubSample = 1;
 	p_handle->chrDstHSubSample = 1;
 	p_handle->chrDstVSubSample = 1;
-
 	p_handle->chrSrcW = srcW / 2;
 	p_handle->chrSrcH = srcH / 2;
 	p_handle->chrDstW = dstW / 2;
 	p_handle->chrDstH = dstH / 2;
-
 	p_handle->srcBpc = desc_src->comp[0].depth;
 	p_handle->dstBpc = desc_dst->comp[0].depth;
-
 	p_handle->chrXInc = (((fs_int64)p_handle->chrSrcW << 16) + (p_handle->chrDstW >> 1)) / p_handle->chrDstW;
 	p_handle->chrYInc = (((fs_int64)p_handle->chrSrcH << 16) + (p_handle->chrDstH >> 1)) / p_handle->chrDstH;
 
@@ -240,7 +234,6 @@ static int init_handle(fs_scale_handle * p_handle ,float *x, float *y)
 fail: // FIXME replace things by appropriate error codes
 	return -1;
 }
-
 
 static int init_handletoint(fs_scale_handle * p_handle ,float *x, float *y)
 {
@@ -326,7 +319,6 @@ static int init_handletoint(fs_scale_handle * p_handle ,float *x, float *y)
 			if ((ret = initFilter_fast(&p_handle->vChrFilter, &p_handle->vChrFilterPos, &p_handle->vChrFilterSize,
 				p_handle->chrYInc, p_handle->chrSrcH, p_handle->chrDstH, filterAlign, (1 << 12), 64, 64)) < 0)
 				goto fail;
-			//getchar();
 		}
 		else
 		{
@@ -346,9 +338,6 @@ fail: // FIXME replace things by appropriate error codes
 	return -1;
 }
 
-
-
-
 int scale(fs_scale_handle *c, const uint8_t *const srcSlice[],
 	const int srcStride[], int srcSliceY, int srcSliceH,
 	void *const dst[], const int dstStride[], int degree)
@@ -363,9 +352,7 @@ int scale(fs_scale_handle *c, const uint8_t *const srcSlice[],
 			printf("input valid!\n");
 			return -1;
 		}
-
 	}
-
 
 
 fs_scale_handle * fs_getScaleHandle(int srcW, int srcH, FS_IMG_FMT_S srcFormat, int dstW, int dstH, FS_IMG_FMT_S dstFormat, fs_int64 flag, float *x, float *y, int toint)
@@ -375,21 +362,17 @@ fs_scale_handle * fs_getScaleHandle(int srcW, int srcH, FS_IMG_FMT_S srcFormat, 
 	if (!p_handle) { printf("cant malloc\n"); return NULL; }
 
 	p_handle->form = toint;
-
 	p_handle->srcH = srcH;
 	p_handle->srcW = srcW;
 	p_handle->srcFormat = srcFormat;
 	p_handle->dstH = dstH;
 	p_handle->dstW = dstW;
 	p_handle->dstFormat = dstFormat;
-
 	p_handle->flag = flag;
 
-	//printf("%d\n", toint);
 	if(toint == 0)ret = init_handle(p_handle, x, y);
 	else if(toint == 1)ret = init_handletoint(p_handle, x, y);
-	else{printf("toint invalid\n");}
-
+	else printf("toint invalid\n");
 	if (ret) { printf("Init scale handle failed.\n"); goto FAIL; }
 
 	return p_handle;
@@ -412,43 +395,28 @@ void fs_freeScaleHandle(fs_scale_handle * p_handle)
 	free(p_handle->hLumFilterPos);
 	free(p_handle->hChrFilterPos);
 
-		
 	free_filters(p_handle);
 }
 
 static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], int srcSliceY, int srcSliceH, float *dst[], int dstStride[])
 {
-	/* load a few things into local vars to make the code more readable?
-	* and faster */
 	const int dstW = c->dstW;
 	const int dstH = c->dstH;
-
 	int32_t *vLumFilterPos = c->vLumFilterPos;
 	int32_t *vChrFilterPos = c->vChrFilterPos;
-
 	const int vLumFilterSize = c->vLumFilterSize;
-	//printf("vLumFilterSize = %d", vLumFilterSize);
 	const int vChrFilterSize = c->vChrFilterSize;
-
-
 	c->chrDither8 = c->lumDither8 = sws_pb_64;
-
 	yuv2planarX_fn yuv2planeX = yuv2planeX_8_c;// = c->yuv2planeX;
 	yuv2interleavedX_fn yuv2nv12cX = yuv2nv12cX_c;// = c->yuv2nv12cX;
-
 	const int chrSrcSliceY = srcSliceY >> c->chrSrcVSubSample;
 	const int chrSrcSliceH = AV_CEIL_RSHIFT(srcSliceH, c->chrSrcVSubSample);
-
 	int lastDstY;
-
-	/* vars which will change and which we need to store back in the context */
 	int dstY;// = c->dstY;
 	int lumBufIndex;//= c->lumBufIndex;
 	int chrBufIndex;//= c->chrBufIndex;
 	int lastInLumBuf;// = c->lastInLumBuf;
 	int lastInChrBuf;// = c->lastInChrBuf;
-
-
 	int lumStart = 0;
 	int lumEnd = c->descIndex[0];
 	int chrStart = lumEnd;
@@ -459,14 +427,11 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 	SwsSlice *hout_slice = &c->slice[c->numSlice - 3];
 	SwsSlice *out_slice = &c->slice[c->numSlice - 1];
 	SwsFilterDescriptor *desc = c->desc;
-
 	int hasLumHoles = 1;
 	int hasChrHoles = 1;
 
-	/* Note the user might start scaling the picture in the middle so this
-	* will not get executed. This is not really intended but works
-	* currently, so people might do it. */
-	if (srcSliceY == 0) {
+	if (srcSliceY == 0) 
+	{
 		lumBufIndex = -1;
 		chrBufIndex = -1;
 		dstY = 0;
@@ -484,87 +449,77 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 	init_slice_from_dst(out_slice, (float**)dst, dstStride, c->dstW,
 		dstY, dstH, dstY >> c->chrDstVSubSample, AV_CEIL_RSHIFT(dstH, c->chrDstVSubSample), 0);
 
-	if (srcSliceY == 0) {
+	if (srcSliceY == 0) 
+	{
 		hout_slice->plane[0].sliceY = lastInLumBuf + 1;
 		hout_slice->plane[1].sliceY = lastInChrBuf + 1;
 		hout_slice->plane[2].sliceY = lastInChrBuf + 1;
 		hout_slice->plane[3].sliceY = lastInLumBuf + 1;
-
-		hout_slice->plane[0].sliceH =
-			hout_slice->plane[1].sliceH =
-			hout_slice->plane[2].sliceH =
-			hout_slice->plane[3].sliceH = 0;
+		hout_slice->plane[0].sliceH = hout_slice->plane[1].sliceH = hout_slice->plane[2].sliceH = hout_slice->plane[3].sliceH = 0;
 		hout_slice->width = dstW;
 	}
 
 	int yeah = 0;
-
 	for (; dstY < dstH; dstY++)
 	{
 		const int chrDstY = dstY >> c->chrDstVSubSample;
-
-		// First line needed as input
 		const int firstLumSrcY = FFMAX(1 - vLumFilterSize, vLumFilterPos[dstY]);
 		const int firstLumSrcY2 = FFMAX(1 - vLumFilterSize, vLumFilterPos[FFMIN(dstY | ((1 << c->chrDstVSubSample) - 1), dstH - 1)]);
-		// First line needed as input
 		const int firstChrSrcY = FFMAX(1 - vChrFilterSize, vChrFilterPos[chrDstY]);
-
-		// Last line needed as input
 		int lastLumSrcY = FFMIN(c->srcH, firstLumSrcY + vLumFilterSize) - 1;
 		int lastLumSrcY2 = FFMIN(c->srcH, firstLumSrcY2 + vLumFilterSize) - 1;
 		int lastChrSrcY = FFMIN(c->chrSrcH, firstChrSrcY + vChrFilterSize) - 1;
 		int enough_lines;
-
 		int i;
 		int posY, cPosY, firstPosY, lastPosY, firstCPosY, lastCPosY;
 
-		// handle holes (FAST_BILINEAR & weird filters)
 		if (firstLumSrcY > lastInLumBuf)
 		{
 			hasLumHoles = lastInLumBuf != firstLumSrcY - 1;
-			if (hasLumHoles) {
+			if (hasLumHoles) 
+			{
 				hout_slice->plane[0].sliceY = firstLumSrcY;
 				hout_slice->plane[3].sliceY = firstLumSrcY;
-				hout_slice->plane[0].sliceH =
-					hout_slice->plane[3].sliceH = 0;
+				hout_slice->plane[0].sliceH = hout_slice->plane[3].sliceH = 0;
 			}
 
 			lastInLumBuf = firstLumSrcY - 1;
 		}
-		if (firstChrSrcY > lastInChrBuf) {
-
+		if (firstChrSrcY > lastInChrBuf) 
+		{
 			hasChrHoles = lastInChrBuf != firstChrSrcY - 1;
-			if (hasChrHoles) {
+			if (hasChrHoles) 
+			{
 				hout_slice->plane[1].sliceY = firstChrSrcY;
 				hout_slice->plane[2].sliceY = firstChrSrcY;
-				hout_slice->plane[1].sliceH =
-					hout_slice->plane[2].sliceH = 0;
+				hout_slice->plane[1].sliceH = hout_slice->plane[2].sliceH = 0;
 			}
-
 			lastInChrBuf = firstChrSrcY - 1;
 		}
 
-		// Do we have enough lines in this slice to output the dstY line
-		enough_lines = lastLumSrcY2 < srcSliceY + srcSliceH &&
-			lastChrSrcY < AV_CEIL_RSHIFT(srcSliceY + srcSliceH, c->chrSrcVSubSample);
+		enough_lines = lastLumSrcY2 < srcSliceY + srcSliceH && lastChrSrcY < AV_CEIL_RSHIFT(srcSliceY + srcSliceH, c->chrSrcVSubSample);
 
-		if (!enough_lines) {
+		if (!enough_lines) 
+		{
 			lastLumSrcY = srcSliceY + srcSliceH - 1;
 			lastChrSrcY = chrSrcSliceY + chrSrcSliceH - 1;
 		}
 
 		posY = hout_slice->plane[0].sliceY + hout_slice->plane[0].sliceH;
-		if (posY <= lastLumSrcY && !hasLumHoles) {
+		if (posY <= lastLumSrcY && !hasLumHoles) 
+		{
 			firstPosY = FFMAX(firstLumSrcY, posY);
 			lastPosY = FFMIN(firstLumSrcY + hout_slice->plane[0].available_lines - 1, srcSliceY + srcSliceH - 1);
 		}
-		else {
+		else 
+		{
 			firstPosY = posY;
 			lastPosY = lastLumSrcY;
 		}
 
 		cPosY = hout_slice->plane[1].sliceY + hout_slice->plane[1].sliceH;
-		if (cPosY <= lastChrSrcY && !hasChrHoles) {
+		if (cPosY <= lastChrSrcY && !hasChrHoles) 
+		{
 			firstCPosY = FFMAX(firstChrSrcY, cPosY);
 			lastCPosY = FFMIN(firstChrSrcY + hout_slice->plane[1].available_lines - 1, AV_CEIL_RSHIFT(srcSliceY + srcSliceH, c->chrSrcVSubSample) - 1);
 		}
@@ -575,7 +530,8 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 
 		rotate_slice(hout_slice, lastPosY, lastCPosY);
 
-		if (posY < lastLumSrcY + 1) {
+		if (posY < lastLumSrcY + 1) 
+		{
 			for (i = lumStart; i < lumEnd; ++i)
 				desc[i].process(c, &desc[i], firstPosY, lastPosY - firstPosY + 1);
 		}
@@ -583,7 +539,8 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 		lumBufIndex += lastLumSrcY - lastInLumBuf;
 		lastInLumBuf = lastLumSrcY;
 
-		if (cPosY < lastChrSrcY + 1) {
+		if (cPosY < lastChrSrcY + 1) 
+		{
 			for (i = chrStart; i < chrEnd; ++i)
 				desc[i].process(c, &desc[i], firstCPosY, lastCPosY - firstCPosY + 1);
 		}
@@ -591,35 +548,21 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 		chrBufIndex += lastChrSrcY - lastInChrBuf;
 		lastInChrBuf = lastChrSrcY;
 
-		// wrap buf index around to stay inside the ring buffer
 		if (lumBufIndex >= vLumFilterSize)
 			lumBufIndex -= vLumFilterSize;
 		if (chrBufIndex >= vChrFilterSize)
 			chrBufIndex -= vChrFilterSize;
 		if (!enough_lines)
-			break;  // we can't output a dstY line so let's try with the next slice
+			break; 
 
-		if (dstY >= dstH - 2) {
-			/* hmm looks like we can't use MMX here without overwriting
-			* this array's tail */
-
-
-			init_vscale_pfn(c, yuv2planeX_8_c, yuv2nv12cX_c);
-		}
-		{
-			for (i = vStart; i < vEnd; ++i)
-			{
-				desc[i].process(c, &desc[i], dstY, 1);
-			}
-		}
-
+		if (dstY >= dstH - 2) init_vscale_pfn(c, yuv2planeX_8_c, yuv2nv12cX_c);
+		
+		for (i = vStart; i < vEnd; ++i)
+			desc[i].process(c, &desc[i], dstY, 1);
+		
 		desc[5].processx(c, &desc[5], dstY, 1, yeah);
-		
 		yeah ++;
-		
-		
 	}
-
 	return dstY - lastDstY;
 }
 
@@ -627,36 +570,23 @@ static int swscale(fs_scale_handle *c, const uint8_t *src[], int srcStride[], in
 
 static int swscaletoint(fs_scale_handle *c, const uint8_t *src[], int srcStride[], int srcSliceY, int srcSliceH, float *dst[], int dstStride[])
 {
-	/* load a few things into local vars to make the code more readable?
-	* and faster */
 	const int dstW = c->dstW;
 	const int dstH = c->dstH;
-
 	int32_t *vLumFilterPos = c->vLumFilterPos;
 	int32_t *vChrFilterPos = c->vChrFilterPos;
-
 	const int vLumFilterSize = c->vLumFilterSize;
 	const int vChrFilterSize = c->vChrFilterSize;
-
-
 	c->chrDither8 = c->lumDither8 = sws_pb_64;
-
 	yuv2planarX_fn yuv2planeX = yuv2planeX_8_c;// = c->yuv2planeX;
 	yuv2interleavedX_fn yuv2nv12cX = yuv2nv12cX_c;// = c->yuv2nv12cX;
-
 	const int chrSrcSliceY = srcSliceY >> c->chrSrcVSubSample;
 	const int chrSrcSliceH = AV_CEIL_RSHIFT(srcSliceH, c->chrSrcVSubSample);
-
 	int lastDstY;
-
-	/* vars which will change and which we need to store back in the context */
 	int dstY;// = c->dstY;
 	int lumBufIndex;//= c->lumBufIndex;
 	int chrBufIndex;//= c->chrBufIndex;
 	int lastInLumBuf;// = c->lastInLumBuf;
 	int lastInChrBuf;// = c->lastInChrBuf;
-
-
 	int lumStart = 0;
 	int lumEnd = c->descIndex[0];
 	int chrStart = lumEnd;
@@ -667,120 +597,107 @@ static int swscaletoint(fs_scale_handle *c, const uint8_t *src[], int srcStride[
 	SwsSlice *hout_slice = &c->slice[c->numSlice - 2];
 	SwsSlice *vout_slice = &c->slice[c->numSlice - 1];
 	SwsFilterDescriptor *desc = c->desc;
-
 	int hasLumHoles = 1;
 	int hasChrHoles = 1;
 
-	/* Note the user might start scaling the picture in the middle so this
-	* will not get executed. This is not really intended but works
-	* currently, so people might do it. */
-	if (srcSliceY == 0) {
+	if (srcSliceY == 0) 
+	{
 		lumBufIndex = -1;
 		chrBufIndex = -1;
 		dstY = 0;
 		lastInLumBuf = -1;
 		lastInChrBuf = -1;
 	}
-	
+
 	lastDstY = dstY;
-
 	init_vscale_pfntoint(c, yuv2planeX, yuv2nv12cX);
-
-	init_slice_from_src(src_slice, (uint8_t**)src, srcStride, c->srcW,
-		srcSliceY, srcSliceH, chrSrcSliceY, chrSrcSliceH, 1);
-
-	init_slice_from_src(vout_slice, (uint8_t**)dst, dstStride, c->dstW,
-		dstY, dstH, dstY >> c->chrDstVSubSample, AV_CEIL_RSHIFT(dstH, c->chrDstVSubSample), 0);
-	if (srcSliceY == 0) {
+	init_slice_from_src(src_slice, (uint8_t**)src, srcStride, c->srcW, srcSliceY, srcSliceH, chrSrcSliceY, chrSrcSliceH, 1);
+	init_slice_from_src(vout_slice, (uint8_t**)dst, dstStride, c->dstW, dstY, dstH, dstY >> c->chrDstVSubSample, AV_CEIL_RSHIFT(dstH, c->chrDstVSubSample), 0);
+	
+	if (srcSliceY == 0) 
+	{
 		hout_slice->plane[0].sliceY = lastInLumBuf + 1;
 		hout_slice->plane[1].sliceY = lastInChrBuf + 1;
 		hout_slice->plane[2].sliceY = lastInChrBuf + 1;
 		hout_slice->plane[3].sliceY = lastInLumBuf + 1;
-
-		hout_slice->plane[0].sliceH =
-			hout_slice->plane[1].sliceH =
-			hout_slice->plane[2].sliceH =
-			hout_slice->plane[3].sliceH = 0;
+		hout_slice->plane[0].sliceH = hout_slice->plane[1].sliceH = hout_slice->plane[2].sliceH = hout_slice->plane[3].sliceH = 0;
 		hout_slice->width = dstW;
 	}
 
 	for (; dstY < dstH; dstY++)
 	{
 		const int chrDstY = dstY >> c->chrDstVSubSample;
-
-		// First line needed as input
 		const int firstLumSrcY = FFMAX(1 - vLumFilterSize, vLumFilterPos[dstY]);
 		const int firstLumSrcY2 = FFMAX(1 - vLumFilterSize, vLumFilterPos[FFMIN(dstY | ((1 << c->chrDstVSubSample) - 1), dstH - 1)]);
-		// First line needed as input
 		const int firstChrSrcY = FFMAX(1 - vChrFilterSize, vChrFilterPos[chrDstY]);
-
-		// Last line needed as input
 		int lastLumSrcY = FFMIN(c->srcH, firstLumSrcY + vLumFilterSize) - 1;
 		int lastLumSrcY2 = FFMIN(c->srcH, firstLumSrcY2 + vLumFilterSize) - 1;
 		int lastChrSrcY = FFMIN(c->chrSrcH, firstChrSrcY + vChrFilterSize) - 1;
 		int enough_lines;
-
 		int i;
 		int posY, cPosY, firstPosY, lastPosY, firstCPosY, lastCPosY;
 
-		// handle holes (FAST_BILINEAR & weird filters)
 		if (firstLumSrcY > lastInLumBuf)
 		{
 			hasLumHoles = lastInLumBuf != firstLumSrcY - 1;
-			if (hasLumHoles) {
+			if (hasLumHoles) 
+			{
 				hout_slice->plane[0].sliceY = firstLumSrcY;
 				hout_slice->plane[3].sliceY = firstLumSrcY;
-				hout_slice->plane[0].sliceH =
-					hout_slice->plane[3].sliceH = 0;
+				hout_slice->plane[0].sliceH = hout_slice->plane[3].sliceH = 0;
 			}
-
 			lastInLumBuf = firstLumSrcY - 1;
 		}
-		if (firstChrSrcY > lastInChrBuf) {
 
+		if (firstChrSrcY > lastInChrBuf) 
+		{
 			hasChrHoles = lastInChrBuf != firstChrSrcY - 1;
-			if (hasChrHoles) {
+			if (hasChrHoles) 
+			{
 				hout_slice->plane[1].sliceY = firstChrSrcY;
 				hout_slice->plane[2].sliceY = firstChrSrcY;
-				hout_slice->plane[1].sliceH =
-					hout_slice->plane[2].sliceH = 0;
+				hout_slice->plane[1].sliceH = hout_slice->plane[2].sliceH = 0;
 			}
-
 			lastInChrBuf = firstChrSrcY - 1;
 		}
 
-		// Do we have enough lines in this slice to output the dstY line
-		enough_lines = lastLumSrcY2 < srcSliceY + srcSliceH &&
-			lastChrSrcY < AV_CEIL_RSHIFT(srcSliceY + srcSliceH, c->chrSrcVSubSample);
 
-		if (!enough_lines) {
+		enough_lines = lastLumSrcY2 < srcSliceY + srcSliceH && lastChrSrcY < AV_CEIL_RSHIFT(srcSliceY + srcSliceH, c->chrSrcVSubSample);
+
+		if (!enough_lines) 
+		{
 			lastLumSrcY = srcSliceY + srcSliceH - 1;
 			lastChrSrcY = chrSrcSliceY + chrSrcSliceH - 1;
 		}
 
 		posY = hout_slice->plane[0].sliceY + hout_slice->plane[0].sliceH;
-		if (posY <= lastLumSrcY && !hasLumHoles) {
+		if (posY <= lastLumSrcY && !hasLumHoles)  
+		{
 			firstPosY = FFMAX(firstLumSrcY, posY);
 			lastPosY = FFMIN(firstLumSrcY + hout_slice->plane[0].available_lines - 1, srcSliceY + srcSliceH - 1);
 		}
-		else {
+		else 
+		{
 			firstPosY = posY;
 			lastPosY = lastLumSrcY;
 		}
 
 		cPosY = hout_slice->plane[1].sliceY + hout_slice->plane[1].sliceH;
-		if (cPosY <= lastChrSrcY && !hasChrHoles) {
+		if (cPosY <= lastChrSrcY && !hasChrHoles) 
+		{
 			firstCPosY = FFMAX(firstChrSrcY, cPosY);
 			lastCPosY = FFMIN(firstChrSrcY + hout_slice->plane[1].available_lines - 1, AV_CEIL_RSHIFT(srcSliceY + srcSliceH, c->chrSrcVSubSample) - 1);
 		}
-		else {
+		else 
+		{
 			firstCPosY = cPosY;
 			lastCPosY = lastChrSrcY;
 		}
 
 		rotate_slice(hout_slice, lastPosY, lastCPosY);
 
-		if (posY < lastLumSrcY + 1) {
+		if (posY < lastLumSrcY + 1) 
+		{
 			for (i = lumStart; i < lumEnd; ++i)
 				desc[i].process(c, &desc[i], firstPosY, lastPosY - firstPosY + 1);
 		}
@@ -788,44 +705,25 @@ static int swscaletoint(fs_scale_handle *c, const uint8_t *src[], int srcStride[
 		lumBufIndex += lastLumSrcY - lastInLumBuf;
 		lastInLumBuf = lastLumSrcY;
 
-		if (cPosY < lastChrSrcY + 1) {
+		if (cPosY < lastChrSrcY + 1) 
+		{
 			for (i = chrStart; i < chrEnd; ++i)
-				{//printf("%d\n", i);
-				desc[i].process(c, &desc[i], firstCPosY, lastCPosY - firstCPosY + 1);}
+				desc[i].process(c, &desc[i], firstCPosY, lastCPosY - firstCPosY + 1);
 		}
 
 		chrBufIndex += lastChrSrcY - lastInChrBuf;
 		lastInChrBuf = lastChrSrcY;
 
-		// wrap buf index around to stay inside the ring buffer
 		if (lumBufIndex >= vLumFilterSize)
 			lumBufIndex -= vLumFilterSize;
 		if (chrBufIndex >= vChrFilterSize)
 			chrBufIndex -= vChrFilterSize;
-		if (!enough_lines)
-			break;  // we can't output a dstY line so let's try with the next slice
-		
-		if (dstY >= dstH - 2) {
-			/* hmm looks like we can't use MMX here without overwriting
-			* this array's tail */
+		if (!enough_lines) break;  
+		if (dstY >= dstH - 2) init_vscale_pfntoint(c, yuv2planeX_8_c, yuv2nv12cX_c);
 
-
-			init_vscale_pfntoint(c, yuv2planeX_8_c, yuv2nv12cX_c);
-		}
-		
-		{
-			for (i = vStart; i < vEnd; ++i)
-				desc[i].process(c, &desc[i], dstY, 1);
-		}
-		
+		for (i = vStart; i < vEnd; ++i)
+			desc[i].process(c, &desc[i], dstY, 1);
 	}
-	/* store changed local vars back in the context */
-	//c->dstY = dstY;
-	//c->lumBufIndex = lumBufIndex;
-	//c->chrBufIndex = chrBufIndex;
-	//c->lastInLumBuf = lastInLumBuf;
-	//c->lastInChrBuf = lastInChrBuf;
-	
 	return dstY - lastDstY;
 }
 
@@ -837,44 +735,32 @@ int  my_sws_scale(fs_scale_handle *c, const uint8_t * const srcSlice[], const in
 	int i, ret = 0;
 	const uint8_t *src2[4];
 	float *dst2[4];
-
 	int macro_height = 1 << c->chrSrcVSubSample;
-	// copy strides, so they can safely be modified
 	int srcStride2[4];
 	int dstStride2[4];
 	int srcSliceY_internal = srcSliceY;
 
-	if (!srcStride || !dstStride || !dst || !srcSlice) {
-		return -1;
-	}
+	if (!srcStride || !dstStride || !dst || !srcSlice) return -1;
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) 
+	{
 		srcStride2[i] = srcStride[i];
 		dstStride2[i] = dstStride[i];
 	}
 
 	if ((srcSliceY & (macro_height - 1)) ||
 		((srcSliceH& (macro_height - 1)) && srcSliceY + srcSliceH != c->srcH) ||
-		srcSliceY + srcSliceH > c->srcH) {
-		return -2;
-	}
-
+		srcSliceY + srcSliceH > c->srcH) return -2;
+	
 	memcpy(src2, srcSlice, sizeof(src2));
 	memcpy(dst2, dst, sizeof(dst2));
 
-	// do not mess up sliceDir if we have a "trailing" 0-size slice
-	if (srcSliceH == 0)
-		return 0;
-
+	if (srcSliceH == 0) return 0;
 
 	c->sliceDir = 1;
-
 	c->degree = degree;
-
 	src2[3] = src2[2] = NULL;
 	dst2[3] = dst2[2] = NULL;
-
-
 	ret = swscale(c, src2, srcStride2, srcSliceY_internal, srcSliceH, dst2, dstStride2);
 
 	return ret;
@@ -887,43 +773,31 @@ int  my_sws_scaletoint(fs_scale_handle *c, const uint8_t * const srcSlice[], con
 	int i, ret = 0;
 	const uint8_t *src2[4];
 	uint8_t *dst2[4];
-
 	int macro_height = 1 << c->chrSrcVSubSample;
-	// copy strides, so they can safely be modified
 	int srcStride2[4];
 	int dstStride2[4];
 	int srcSliceY_internal = srcSliceY;
 
-	if (!srcStride || !dstStride || !dst || !srcSlice) {
-		return -1;
-	}
-
-	for (i = 0; i < 4; i++) {
+	if (!srcStride || !dstStride || !dst || !srcSlice) return -1;
+	for (i = 0; i < 4; i++) 
+	{
 		srcStride2[i] = srcStride[i];
 		dstStride2[i] = dstStride[i];
 	}
 
 	if ((srcSliceY & (macro_height - 1)) ||
 		((srcSliceH& (macro_height - 1)) && srcSliceY + srcSliceH != c->srcH) ||
-		srcSliceY + srcSliceH > c->srcH) {
-		return -2;
-	}
-
+		srcSliceY + srcSliceH > c->srcH) return -2;
+	
 	memcpy(src2, srcSlice, sizeof(src2));
 	memcpy(dst2, dst, sizeof(dst2));
 
-	// do not mess up sliceDir if we have a "trailing" 0-size slice
-	if (srcSliceH == 0)
-		return 0;
-
+	if (srcSliceH == 0) return 0;
 
 	c->sliceDir = 1;
 	c->degree = degree;
-
 	src2[3] = src2[2] = NULL;
 	dst2[3] = dst2[2] = NULL;
-
-
 	ret = swscaletoint(c, src2, srcStride2, srcSliceY_internal, srcSliceH, dst2, dstStride2);
 
 	return ret;

@@ -69,7 +69,8 @@ void ch2floatnow(float *x, float *y, uint8_t * dst1, uint8_t * dst2, const uint8
 	float *tmp_dst1;
 	float *tmp_dst2;
 	int i;
-	for (i = 0; i < width; i++) {
+	for (i = 0; i < width; i++) 
+	{
 		dst1[i] = src[2 * i + 0];
 		tmp_dst1[i] = (*y) * ((*x) + dst1[i]) ;
 		dst1[i] = (float)((*x) + dst1[i]) * (*y);

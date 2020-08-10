@@ -178,19 +178,20 @@ int initFilter(int16_t **outFilter, int32_t **filterPos,
 			int shift = (*filterPos)[i] + FFMIN(filterSize - srcW, 0);
 			fs_int64 acc = 0;
 
-			for (j = filterSize - 1; j >= 0; j--) {
-				if ((*filterPos)[i] + j >= srcW) {
+			for (j = filterSize - 1; j >= 0; j--) 
+			{
+				if ((*filterPos)[i] + j >= srcW) 
+				{
 					acc += filter[i * filterSize + j];
 					filter[i * filterSize + j] = 0;
 				}
 			}
-			for (j = filterSize - 1; j >= 0; j--) {
-				if (j < shift) {
+			for (j = filterSize - 1; j >= 0; j--) 
+			{
+				if (j < shift) 
 					filter[i * filterSize + j] = 0;
-				}
-				else {
+				else 
 					filter[i * filterSize + j] = filter[i * filterSize + j - shift];
-				}
 			}
 
 			(*filterPos)[i] -= shift;
@@ -212,15 +213,18 @@ int initFilter(int16_t **outFilter, int32_t **filterPos,
 		fs_int64 error = 0;
 		fs_int64 sum = 0;
 
-		for (j = 0; j < filterSize; j++) {
+		for (j = 0; j < filterSize; j++) 
+		{
 			sum += filter[i * filterSize + j];
 		}
 		sum = (sum + one / 2) / one;
-		if (!sum) {
+		if (!sum) 
+		{
 			printf("SwScaler: zero vector in scaling\n");
 			sum = 1;
 		}
-		for (j = 0; j < *outFilterSize; j++) {
+		for (j = 0; j < *outFilterSize; j++)
+		{
 			fs_int64 v = filter[i * filterSize + j] + error;
 			int intV = ROUNDED_DIV(v, sum);
 			(*outFilter)[i * (*outFilterSize) + j] = intV;
@@ -228,23 +232,15 @@ int initFilter(int16_t **outFilter, int32_t **filterPos,
 		}
 	}
 
-	(*filterPos)[dstW + 0] =
-		(*filterPos)[dstW + 1] =
-		(*filterPos)[dstW + 2] = (*filterPos)[dstW - 1]; /* the MMX/SSE scaler will
+	(*filterPos)[dstW + 0] = (*filterPos)[dstW + 1] = (*filterPos)[dstW + 2] = (*filterPos)[dstW - 1]; /* the MMX/SSE scaler will
 														 * read over the end */
 	for (i = 0; i < *outFilterSize; i++)
 	{
 		int k = (dstW - 1) * (*outFilterSize) + i;
-		(*outFilter)[k + 1 * (*outFilterSize)] =
-			(*outFilter)[k + 2 * (*outFilterSize)] =
-			(*outFilter)[k + 3 * (*outFilterSize)] = (*outFilter)[k];
+		(*outFilter)[k + 1 * (*outFilterSize)] = (*outFilter)[k + 2 * (*outFilterSize)] = (*outFilter)[k + 3 * (*outFilterSize)] = (*outFilter)[k];
 	}
-
 	ret = 0;
-
 	free(filter);
-	//free(outFilter);
-	//free(filterPos);
 	return ret;
 }
 
@@ -269,9 +265,7 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 	fs_int64 xDstInSrc;
 	filterSize = 2;
 	if (one == 1 << 12 && srcPos == 64)
-	{
 		filterSize = 1;
-	}
 
 	filter = (fs_int64 *)malloc(sizeof(fs_int64) * dstW * filterSize);
 	if (filter == NULL) { printf("can't malloc.\n"); free(*filterPos); return -2; }
@@ -310,7 +304,6 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 	* av_free(filter);
 	*/
 	filter2Size = filterSize;
-
 	// TODO : filter2 not used in our case. Delete it.
 	filter2 = (fs_int64 *)malloc(sizeof(fs_int64) * dstW * filter2Size);
 	if (filter2 == NULL) { printf("can't malloc.\n"); free(filter); free(*filterPos); return -3; }
@@ -321,9 +314,7 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 
 		for (j = 0; j < filterSize; j++)
 			filter2[i * filter2Size + j] = filter[i * filterSize + j];
-
 		// FIXME dstFilter
-
 		(*filterPos)[i] += (filterSize - 1) / 2 - (filter2Size - 1) / 2;
 	}
 	free(filter);
@@ -354,15 +345,16 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 			// move filter coefficients left
 			for (k = 1; k < filter2Size; k++)
 				filter2[i * filter2Size + k - 1] = filter2[i * filter2Size + k];
+
 			filter2[i * filter2Size + k - 1] = 0;
 			(*filterPos)[i]++;
 		}
 
 		cutOff = 0;
 		/* count near zeros on the right */
-		for (j = filter2Size - 1; j > 0; j--) {
+		for (j = filter2Size - 1; j > 0; j--) 
+		{
 			cutOff += FFABS(filter2[i * filter2Size + j]);
-
 			if (cutOff > SWS_MAX_REDUCE_CUTOFF * fone)
 				break;
 			min--;
@@ -373,18 +365,23 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 	}
 
 	filterSize = (minFilterSize + (filterAlign - 1)) & (~(filterAlign - 1));
-
-	//filter = av_malloc_array(dstW, filterSize * sizeof(*filter));
 	filter = (fs_int64 *)malloc(sizeof(fs_int64) * dstW * filterSize);
-	if (filter == NULL) { printf("can't malloc.\n"); free(filter2); free(*filterPos); return -4; }
+	if (filter == NULL) 
+	{ 
+		printf("can't malloc.\n"); 
+		free(filter2); 
+		free(*filterPos); 
+		return -4; 
+	}
 
 	*outFilterSize = filterSize;
 
 	/* try to reduce the filter-size (step2 reduce it) */
-	for (i = 0; i < dstW; i++) {
+	for (i = 0; i < dstW; i++) 
+	{
 		int j;
-
-		for (j = 0; j < filterSize; j++) {
+		for (j = 0; j < filterSize; j++) 
+		{
 			if (j >= filter2Size)
 				filter[i * filterSize + j] = 0;
 			else
@@ -394,11 +391,14 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 
 	// FIXME try to align filterPos if possible
 	// fix borders
-	for (i = 0; i < dstW; i++) {
+	for (i = 0; i < dstW; i++) 
+	{
 		int j;
-		if ((*filterPos)[i] < 0) {
+		if ((*filterPos)[i] < 0) 
+		{
 			// move filter coefficients left to compensate for filterPos
-			for (j = 1; j < filterSize; j++) {
+			for (j = 1; j < filterSize; j++) 
+			{
 				int left = FFMAX(j + (*filterPos)[i], 0);
 				filter[i * filterSize + left] += filter[i * filterSize + j];
 				filter[i * filterSize + j] = 0;
@@ -406,23 +406,25 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 			(*filterPos)[i] = 0;
 		}
 
-		if ((*filterPos)[i] + filterSize > srcW) {
+		if ((*filterPos)[i] + filterSize > srcW) 
+		{
 			int shift = (*filterPos)[i] + FFMIN(filterSize - srcW, 0);
 			fs_int64 acc = 0;
 
-			for (j = filterSize - 1; j >= 0; j--) {
-				if ((*filterPos)[i] + j >= srcW) {
+			for (j = filterSize - 1; j >= 0; j--) 
+			{
+				if ((*filterPos)[i] + j >= srcW) 
+				{
 					acc += filter[i * filterSize + j];
 					filter[i * filterSize + j] = 0;
 				}
 			}
-			for (j = filterSize - 1; j >= 0; j--) {
-				if (j < shift) {
+			for (j = filterSize - 1; j >= 0; j--)
+			{
+				if (j < shift) 
 					filter[i * filterSize + j] = 0;
-				}
-				else {
+				else 
 					filter[i * filterSize + j] = filter[i * filterSize + j - shift];
-				}
 			}
 
 			(*filterPos)[i] -= shift;
@@ -435,8 +437,6 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 	//FF_ALLOCZ_ARRAY_OR_GOTO(NULL, *outFilter,
 	//	(dstW + 3), *outFilterSize * sizeof(int16_t), fail);
 
-
-
 	*outFilter = (int16_t *)malloc(sizeof(int16_t) * (*outFilterSize) * (dstW + 3));
 	if (*outFilter == NULL) { printf("can't malloc.\n"); printf("can't malloc.\n"); free(filter); free(*filterPos); return -5; }
 	//else{printf("success\n");}
@@ -446,15 +446,13 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 		fs_int64 error = 0;
 		fs_int64 sum = 0;
 
-		for (j = 0; j < filterSize; j++) {
+		for (j = 0; j < filterSize; j++) 
 			sum += filter[i * filterSize + j];
-		}
 		sum = (sum + one / 2) / one;
-		if (!sum) {
-
+		if (!sum) 
 			sum = 1;
-		}
-		for (j = 0; j < *outFilterSize; j++) {
+		for (j = 0; j < *outFilterSize; j++) 
+		{
 			fs_int64 v = filter[i * filterSize + j] + error;
 			int intV = ROUNDED_DIV(v, sum);
 			(*outFilter)[i * (*outFilterSize) + j] = intV;
@@ -462,24 +460,17 @@ int initFilter_fast(int16_t **outFilter, int32_t **filterPos,
 		}
 	}
 
-	(*filterPos)[dstW + 0] =
-		(*filterPos)[dstW + 1] =
-		(*filterPos)[dstW + 2] = (*filterPos)[dstW - 1]; /* the MMX/SSE scaler will
-														 * read over the end */
+	(*filterPos)[dstW + 0] = (*filterPos)[dstW + 1] = (*filterPos)[dstW + 2] = (*filterPos)[dstW - 1]; 
 	for (i = 0; i < *outFilterSize; i++) 
 	{
 		int k = (dstW - 1) * (*outFilterSize) + i;
-		(*outFilter)[k + 1 * (*outFilterSize)] =
-			(*outFilter)[k + 2 * (*outFilterSize)] =
-			(*outFilter)[k + 3 * (*outFilterSize)] = (*outFilter)[k];
+		(*outFilter)[k + 1 * (*outFilterSize)] = (*outFilter)[k + 2 * (*outFilterSize)] = (*outFilter)[k + 3 * (*outFilterSize)] = (*outFilter)[k];
 	}
 
 	ret = 0;
 
 	free(filter);
 	free(filter2);
-	//free(outFilter);
-	//free(filterPos);
 	return ret;
 }
 
@@ -536,13 +527,13 @@ int init_filters(fs_scale_handle * c, float *x, float * y)
 	int res = 0;
 	int dst_stride = FFALIGN(c->dstW * sizeof(int16_t) + 66, 16);
 
-	int lumBufSize;
-	int chrBufSize;
+	int lumBufSize = 6;
+	int chrBufSize = 5;
 	int i;
-	// TODO : remove these func
-	get_min_buffer_size(c, &lumBufSize, &chrBufSize);
-	lumBufSize = FFMAX(lumBufSize, c->vLumFilterSize + 4);
-	chrBufSize = FFMAX(chrBufSize, c->vChrFilterSize + 4);
+	// TODO : !
+	//get_min_buffer_size(c, &lumBufSize, &chrBufSize);
+	//lumBufSize = FFMAX(lumBufSize, c->vLumFilterSize + 4);
+	//chrBufSize = FFMAX(chrBufSize, c->vChrFilterSize + 4);
 
 	/// 4 slices
 	/// slice 0 : input(src)
@@ -614,12 +605,8 @@ int init_filters(fs_scale_handle * c, float *x, float * y)
 	if (res < 0) goto cleanup;
 
 	/// Descs 5 : (slice 3) convert to (float)(slice 4)
-	
-	{
-		res = ConV(c, &c->desc[5], &c->slice[3], &c->slice[4], x, y);
-		if (res < 0) goto cleanup;
-	}
-	
+	res = ConV(c, &c->desc[5], &c->slice[3], &c->slice[4], x, y);
+	if (res < 0) goto cleanup;
 
 	return 0;
 
@@ -656,13 +643,14 @@ int init_filterstoint(fs_scale_handle * c, float *x, float * y)
 	int res = 0;
 	int dst_stride = FFALIGN(c->dstW * sizeof(int16_t) + 66, 16);
 
-	int lumBufSize;
-	int chrBufSize;
+	int lumBufSize = 6;
+	int chrBufSize = 5;
+	
 
-	// TODO : remove these func
-	get_min_buffer_size(c, &lumBufSize, &chrBufSize);
-	lumBufSize = FFMAX(lumBufSize, c->vLumFilterSize + 4);
-	chrBufSize = FFMAX(chrBufSize, c->vChrFilterSize + 4);
+	// TODO : !
+	//get_min_buffer_size(c, &lumBufSize, &chrBufSize);
+	//lumBufSize = FFMAX(lumBufSize, c->vLumFilterSize + 4);
+	//chrBufSize = FFMAX(chrBufSize, c->vChrFilterSize + 4);
 
 	/// 4 slices
 	/// slice 0 : input(src)
@@ -733,8 +721,7 @@ cleanup:
 	{
 		for (i = 0; i < c->numDesc; ++i)
 		{
-			if(c->desc[i].instance)
-			free(c->desc[i].instance);
+			if(c->desc[i].instance) free(c->desc[i].instance);
 		}
 		free(c->desc);
 		c->desc = NULL;
@@ -744,8 +731,7 @@ cleanup:
 	{
 		for (i = 0; i < c->numSlice ; ++i)
 		{
-			if(&c->slice[i])
-			free_slice(&c->slice[i]);//////
+			if(&c->slice[i]) free_slice(&c->slice[i]);
 		}	
 		free(c->slice);
 		c->slice = NULL;

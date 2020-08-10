@@ -60,7 +60,6 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 	VScalerContext *inst = (VScalerContext *)desc->instance;
 	int dstW = desc->dst->width;
 	int dstH = desc->dstH;
-	//printf("%d\n", dstH);
 
 	int first = FFMAX(1 - inst->filter_size, inst->filter_pos[sliceY]);
 	int sp = first - desc->src->plane[0].sliceY;
@@ -83,7 +82,7 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 				int j;
 				
 				for (j = 0; j<inst->filter_size; j++)
-					{val += sr[j][i] * (int16_t)filter[j];}
+					val += sr[j][i] * (int16_t)filter[j];
 
 				dst[0][i] = av_clip_uint8_c(val >> 19);
 			}
@@ -91,18 +90,15 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		}
 		case 1:
 		{
-			
 			int i;
 			
 			for (i = 0; i<dstW; i++) 
-			{	//printf("123!\n");
-				
+			{	
 				int val = 0;
 				int j;
 				
 				for (j = 0; j<inst->filter_size; j++)
 					val += sr[j][i] * (int16_t)filter[j];
-					
 				
 				*(final + (i + 1) * dstH - 1 - dp) = av_clip_uint8_c(val >> 19);
 			}
@@ -115,15 +111,13 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 			int i;
 			
 			for (i = 0; i<dstW; i++) 
-			{	//printf("123!\n");
-				
+			{	
 				int val = 0;
 				int j;
 				
 				for (j = 0; j<inst->filter_size; j++)
 					val += sr[j][i] * (int16_t)filter[j];
-					
-				
+
 				*(final + Y_size - 1 - i - dp * dstW) = av_clip_uint8_c(val >> 19);
 			}
 			break;
@@ -132,27 +126,21 @@ static int lum_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		case 3:
 		{
 			int i;
-			
 			for (i = 0; i<dstW; i++) 
-			{	//printf("123!\n");
-				
+			{	
 				int val = 0;
 				int j;
 				
 				for (j = 0; j<inst->filter_size; j++)
 					val += sr[j][i] * (int16_t)filter[j];
-					
-				
+
 				*(final + (dstW - i - 1) * dstH + dp) = av_clip_uint8_c(val >> 19);
 			}
-			
 			break;
 		}	
 	}
 	return 1;
 }
-
-
 
 
 static int chr_planar_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sliceH)
@@ -187,9 +175,6 @@ static int chr_planar_vscale(fs_scale_handle *c, SwsFilterDescriptor *desc, int 
 	return 1;
 }
 
-
-
-
 static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc, int sliceY, int sliceH)
 {
 	const int chrSkipMask = (1 << desc->dst->v_chr_sub_sample) - 1;
@@ -201,13 +186,11 @@ static int chr_planar_vscaletoint(fs_scale_handle *c, SwsFilterDescriptor *desc,
 		VScalerContext *inst = (VScalerContext *)desc->instance;
 		int dstW = AV_CEIL_RSHIFT(desc->dst->width, desc->dst->h_chr_sub_sample);
 		int chrSliceY = sliceY >> desc->dst->v_chr_sub_sample;
-
 		int first = FFMAX(1 - inst->filter_size, inst->filter_pos[chrSliceY]);
 		int sp1 = first - desc->src->plane[1].sliceY;
 		int sp2 = first - desc->src->plane[2].sliceY;
 		int dp1 = chrSliceY - desc->dst->plane[1].sliceY;
 		int dp2 = chrSliceY - desc->dst->plane[2].sliceY;
-		//printf("%d, %d\n", dp1, dp2);
 		uint8_t **src1 = desc->src->plane[1].line + sp1;
 		uint8_t **src2 = desc->src->plane[2].line + sp2;
 		uint8_t **dst1 = desc->dst->plane[1].line + dp1;
