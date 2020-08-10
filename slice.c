@@ -5,7 +5,8 @@
 void free_lines(SwsSlice *s)
 {
 	int i;
-	for (i = 0; i < 2; ++i) {
+	for (i = 0; i < 2; ++i) 
+	{
 		int n = s->plane[i].available_lines;
 		int j;
 		for (j = 0; j < n; ++j) {
@@ -57,12 +58,10 @@ void free_slice(SwsSlice *s)
 	if (s) 
 	{
 		if (s->should_free_lines)
-		
 			free_lines(s);
 		for (i = 0; i < 4; ++i) 
 		{
 			free(s->plane[i].line);
-		
 			s->plane[i].tmp = NULL;
 		}
 	}
@@ -71,10 +70,7 @@ void free_slice(SwsSlice *s)
 int alloc_slice(SwsSlice *s, int lumLines, int chrLines, int h_sub_sample, int v_sub_sample, int ring)
 {
 	int i;
-	int size[4] = { lumLines,
-		chrLines,
-		chrLines,
-		lumLines };
+	int size[4] = { lumLines, chrLines, chrLines, lumLines };
 
 	s->h_chr_sub_sample = h_sub_sample;
 	s->v_chr_sub_sample = v_sub_sample;
@@ -90,17 +86,14 @@ int alloc_slice(SwsSlice *s, int lumLines, int chrLines, int h_sub_sample, int v
 		s->plane[i].sliceY = 0;
 		s->plane[i].sliceH = 0;
 	}
-	//printf("\n");
+
 	return 0;
 }
 
 int alloc_slicex(SwsSlice *s, int lumLines, int chrLines, int h_sub_sample, int v_sub_sample, int ring)
 {
 	int i;
-	int size[4] = { lumLines,
-		chrLines,
-		chrLines,
-		lumLines };
+	int size[4] = { lumLines, chrLines, chrLines, lumLines };
 
 	s->h_chr_sub_sample = h_sub_sample;
 	s->v_chr_sub_sample = v_sub_sample;
@@ -124,15 +117,9 @@ int init_slice_from_src(SwsSlice * s, uint8_t *src[4], int stride[4], int srcW, 
 {
 	int i = 0;
 
-	const int start[4] = { lumY,
-		chrY,
-		chrY,
-		lumY };
+	const int start[4] = { lumY, chrY, chrY, lumY };
 
-	const int end[4] = { lumY + lumH,
-		chrY + chrH,
-		chrY + chrH,
-		lumY + lumH };
+	const int end[4] = { lumY + lumH, chrY + chrH, chrY + chrH, lumY + lumH };
 
 	uint8_t *const src_[4] = { src[0] + (relative ? 0 : start[0]) * stride[0],
 		src[1] + (relative ? 0 : start[1]) * stride[1],
@@ -173,15 +160,9 @@ int init_slice_from_dst(SwsSlice * s, float *src[4], int stride[4], int srcW, in
 {
 	int i = 0;
 	
-	const int start[4] = { lumY,
-		chrY,
-		chrY,
-		lumY };
+	const int start[4] = { lumY, chrY, chrY, lumY };
 
-	const int end[4] = { lumY + lumH,
-		chrY + chrH,
-		chrY + chrH,
-		lumY + lumH };
+	const int end[4] = { lumY + lumH, chrY + chrH, chrY + chrH, lumY + lumH };
 	
 	float *const src_[4] = { src[0] + (relative ? 0 : start[0]) * stride[0],
 		src[1] + (relative ? 0 : start[1]) * stride[1],
