@@ -7,7 +7,7 @@
 #define SRC_W	1920
 #define SRC_H	1080
 
-#define DST_W	320
+#define DST_W	920
 #define DST_H	180
 
 #define add	0.0

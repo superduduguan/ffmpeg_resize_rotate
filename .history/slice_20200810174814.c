@@ -190,34 +190,34 @@ int init_slice_from_dst(SwsSlice * s, float *src[4], int stride[4], int srcW, in
 
 	s->width = srcW;
 
-	//!!for (i = 0; i < 1; ++i)
-	{
-		int j;
-		int first = s->plane[i].sliceY;
-		int n = s->plane[i].available_lines;
-		int lines = end[i] - start[i];
-		int tot_lines = end[i] - first;
+	// for (i = 0; i < 1; ++i)
+	// {
+	// 	int j;
+	// 	int first = s->plane[i].sliceY;
+	// 	int n = s->plane[i].available_lines;
+	// 	int lines = end[i] - start[i];
+	// 	int tot_lines = end[i] - first;
 		
-		if (start[i] >= first && n >= tot_lines)
-		{
+	// 	if (start[i] >= first && n >= tot_lines)
+	// 	{
 			
-			s->plane[i].sliceH = FFMAX(tot_lines, s->plane[i].sliceH);
-			for (j = 0; j < lines; j += 1)
-				s->plane[i].line[start[i] - first + j] = src_[i] + j * stride[i];
+	// 		s->plane[i].sliceH = FFMAX(tot_lines, s->plane[i].sliceH);
+	// 		for (j = 0; j < lines; j += 1)
+	// 			s->plane[i].line[start[i] - first + j] = src_[i] + j * stride[i];
 				
-		}
+	// 	}
 		
-		else
-		{
-			s->plane[i].sliceY = start[i];
-			lines = lines > n ? n : lines;
-			s->plane[i].sliceH = lines;
-			for (j = 0; j < lines; j += 1)
-				s->plane[i].line[j] = src_[i] + j * stride[i];//dst[i]存着slice第i平面的起始地址；用该起始地址表示了slice的每一line（每一平面所有line里的第一个的地址才是dst[i]的地址）
+	// 	else
+	// 	{
+	// 		s->plane[i].sliceY = start[i];
+	// 		lines = lines > n ? n : lines;
+	// 		s->plane[i].sliceH = lines;
+	// 		for (j = 0; j < lines; j += 1)
+	// 			s->plane[i].line[j] = src_[i] + j * stride[i];//dst[i]存着slice第i平面的起始地址；用该起始地址表示了slice的每一line（每一平面所有line里的第一个的地址才是dst[i]的地址）
 				
-		}
+	// 	}
 		
-	}
+	// }
 
 	return 0;
 }

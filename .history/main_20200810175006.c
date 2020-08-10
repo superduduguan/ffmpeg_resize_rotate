@@ -7,7 +7,7 @@
 #define SRC_W	1920
 #define SRC_H	1080
 
-#define DST_W	320
+#define DST_W	620
 #define DST_H	180
 
 #define add	0.0
@@ -67,7 +67,7 @@ void main()
 	clock_t start,finish; //定义开始，结束变量
 	start = clock();//初始化
 	int P = 0;
-	for(; P<1000;P++)scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0);
+	for(; P<1;P++)scale(handle1, src_data, src_stride, 0, SRC_H, dst_data1, dst_stride, 0);
 	finish = clock();//初始化结束时间
 	double duration = (double)(finish - start) / CLOCKS_PER_SEC;//转换浮点型
 	printf( "%lf seconds\n", duration );

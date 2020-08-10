@@ -190,7 +190,7 @@ int init_slice_from_dst(SwsSlice * s, float *src[4], int stride[4], int srcW, in
 
 	s->width = srcW;
 
-	//!!for (i = 0; i < 1; ++i)
+	for (i = 0; i < 1; ++i)
 	{
 		int j;
 		int first = s->plane[i].sliceY;
